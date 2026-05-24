@@ -1,0 +1,61 @@
+.card-modal-preview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 200px;
+  margin: 0 auto;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  border: 0.5px solid var(--color-border-default);
+  background: var(--color-bg-surface-raised);
+}
+
+.card-modal-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 8px;
+}
+
+.card-modal-preview-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+
+.card-modal-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 16px;
+  border: 1.5px dashed var(--color-border-strong);
+  border-radius: var(--radius-card);
+  background: var(--color-bg-surface-raised);
+  color: var(--color-text-tertiary);
+  text-align: center;
+  transition: border-color var(--motion-micro), background var(--motion-micro);
+}
+
+.card-modal-dropzone.dragging {
+  border-color: var(--color-text-primary);
+  background: var(--color-bg-surface-sunken);
+}
+
+.card-modal-dropzone-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* Tighter focus ring inside modal */
+.modal .form-input:focus {
+  box-shadow: none;
+  border-color: var(--color-border-input-focus);
+  background: var(--color-bg-input-focus);
+}
+
+/* More space between label and field */
+.modal .form-field {
+  gap: 6px;
+}

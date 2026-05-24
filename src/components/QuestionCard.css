@@ -1,0 +1,123 @@
+.question-card {
+  background: var(--color-bg-surface);
+  border: 0.5px solid var(--color-border-default);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  transition: box-shadow var(--motion-micro);
+}
+
+.question-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 12px;
+}
+
+.question-card-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.question-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.question-chip--sage {
+  background: var(--clr-sage-100);
+  color: var(--clr-sage-400);
+}
+
+.question-chip--sky {
+  background: var(--clr-sky-100);
+  color: var(--clr-sky-400);
+}
+
+.question-chip--coral {
+  background: var(--clr-coral-100);
+  color: var(--clr-coral-400);
+}
+
+.question-chip--neutral {
+  background: var(--color-bg-surface-raised);
+  color: var(--color-text-secondary);
+}
+
+.question-card-body {
+  padding: 0 16px 16px;
+}
+
+.question-qa,
+.question-skit {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.question-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.question-line-label {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  flex-shrink: 0;
+  width: 20px;
+}
+
+.question-line-label.q { color: var(--color-text-tertiary); }
+.question-line-label.a { color: var(--color-text-tertiary); }
+
+.question-line-text {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--color-text-primary);
+}
+
+.question-scaffold {
+  color: var(--color-text-secondary);
+}
+
+.question-scaffold--tappable {
+  border-bottom: 1.5px dashed var(--color-border-strong);
+  cursor: pointer;
+}
+
+.question-card-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px 16px 16px;
+  border-top: 0.5px solid var(--color-border-default);
+}
+
+.question-card-img-single {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border-radius: var(--radius-btn);
+  background: var(--color-bg-surface-raised);
+  padding: 4px;
+}
+
+.question-card-img-thumb {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: var(--radius-btn);
+  background: var(--color-bg-surface-raised);
+  padding: 4px;
+}

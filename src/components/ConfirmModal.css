@@ -1,0 +1,15 @@
+.confirm-modal {
+  max-width: 480px;
+}
+
+.confirm-modal-body {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 24px;
+  color: var(--color-text-secondary);
+}
+
+.confirm-modal-body strong {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
