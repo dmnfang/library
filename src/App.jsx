@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Topbar from './components/Topbar'
 import Sidebar from './components/Sidebar'
 import MainArea from './components/MainArea'
@@ -30,17 +30,19 @@ function App() {
   const [contentType, setContentType] = useState('images')
   const [confirmDelete, setConfirmDelete] = useState(null)
 
-  // Questions state
   const [units, setUnits] = useState([])
   const [activeUnit, setActiveUnit] = useState(null)
   const [questions, setQuestions] = useState([])
   const [questionCounts, setQuestionCounts] = useState({})
   const [modalQuestion, setModalQuestion] = useState(undefined)
 
-  // Lucky Card state
-const [lcDecks, setLcDecks] = useState([])
-const [activeLcDeck, setActiveLcDeck] = useState(null)
-const [lcModes, setLcModes] = useState([])
+  const [lcDecks, setLcDecks] = useState([])
+  const [activeLcDeck, setActiveLcDeck] = useState(null)
+  const [lcModes, setLcModes] = useState([])
+  const [lcModeCounts, setLcModeCounts] = useState({})
+
+  // Track a fetch key to force re-fetch when needed
+  const [lcFetchKey, setLcFetchKey] = useState(0)
 
   useEffect(() => {
     fetchSources().then(data => {
@@ -88,18 +90,27 @@ const [lcModes, setLcModes] = useState([])
   }, [activeSource?.id, contentType])
 
   useEffect(() => {
-  if (!activeSource || contentType !== 'luckycard') return
-  setLcDecks([])
-  setActiveLcDeck(null)
-  setLcModes([])
-  fetchLCDecks(activeSource.id).then(setLcDecks)
-}, [activeSource?.id, contentType])
+    if (contentType !== 'luckycard' || !activeSource) return
+    setLcDecks([])
+    setActiveLcDeck(null)
+    setLcModes([])
+    setLcModeCounts({})
+    fetchLCDecks(activeSource.id).then(async decks => {
+      setLcDecks(decks)
+      const counts = {}
+      await Promise.all(decks.map(async deck => {
+        const modes = await fetchLCModes(deck.id)
+        counts[deck.id] = modes.length
+      }))
+      setLcModeCounts(counts)
+    })
+  }, [lcFetchKey, activeSource?.id])
 
   useEffect(() => {
-  if (!activeLcDeck) return
-  setLcModes([])
-  fetchLCModes(activeLcDeck.id).then(setLcModes)
-}, [activeLcDeck?.id])
+    if (!activeLcDeck) return
+    setLcModes([])
+    fetchLCModes(activeLcDeck.id).then(setLcModes)
+  }, [activeLcDeck?.id])
 
   useEffect(() => {
     if (!activeCategory) return
@@ -121,6 +132,7 @@ const [lcModes, setLcModes] = useState([])
     setCards([])
     setQuestions([])
     setLcModes([])
+    if (contentType === 'luckycard') setLcFetchKey(k => k + 1)
   }
 
   const handleContentTypeChange = (type) => {
@@ -137,6 +149,7 @@ const [lcModes, setLcModes] = useState([])
       setActiveSource({ id: 'grade3', name: 'Grade 3' })
     } else if (type === 'luckycard') {
       setActiveSource({ id: 'grade3', name: 'Grade 3' })
+      setLcFetchKey(k => k + 1)
     }
   }
 
@@ -280,33 +293,38 @@ const [lcModes, setLcModes] = useState([])
     }))
   }
 
-  // Lucky Card handlers
   const handleSelectLcDeck = (deck) => {
-  setActiveLcDeck(deck)
-  setLcModes([])
-}
+    setActiveLcDeck(deck)
+    setLcModes([])
+  }
 
-const handleAddLcDeck = async () => {
-  const newDeck = await addLCDeck(activeSource.id, 'New Deck', lcDecks.length)
-  setLcDecks(prev => [...prev, newDeck])
-  setActiveLcDeck(newDeck)
-  setLcModes([])
-}
+  const handleAddLcDeck = async () => {
+    const newDeck = await addLCDeck(activeSource.id, 'New Deck', lcDecks.length)
+    setLcDecks(prev => [...prev, newDeck])
+    setLcModeCounts(prev => ({ ...prev, [newDeck.id]: 0 }))
+    setActiveLcDeck(newDeck)
+    setLcModes([])
+  }
 
-const handleRenameLcDeck = async (id, newName) => {
-  await renameLCDeck(id, newName)
-  setLcDecks(prev => prev.map(d =>
-    d.id === id ? { ...d, name: newName } : d
-  ))
-  setActiveLcDeck(prev => prev?.id === id ? { ...prev, name: newName } : prev)
-}
+  const handleRenameLcDeck = async (id, newName) => {
+    await renameLCDeck(id, newName)
+    setLcDecks(prev => prev.map(d =>
+      d.id === id ? { ...d, name: newName } : d
+    ))
+    setActiveLcDeck(prev => prev?.id === id ? { ...prev, name: newName } : prev)
+  }
 
-const handleDeleteLcDeck = async (id) => {
-  await deleteLCDeck(id)
-  setLcDecks(prev => prev.filter(d => d.id !== id))
-  setActiveLcDeck(null)
-  setLcModes([])
-}
+  const handleDeleteLcDeck = async (id) => {
+    await deleteLCDeck(id)
+    setLcDecks(prev => prev.filter(d => d.id !== id))
+    setLcModeCounts(prev => {
+      const updated = { ...prev }
+      delete updated[id]
+      return updated
+    })
+    setActiveLcDeck(null)
+    setLcModes([])
+  }
 
   const handleSaveCard = async ({ label, image_url }) => {
     if (modalCard) {
@@ -384,7 +402,7 @@ const handleDeleteLcDeck = async (id) => {
   const sidebarCardCounts =
     contentType === 'images' ? cardCounts :
     contentType === 'questions' ? questionCounts :
-    {}
+    lcModeCounts
 
   const sidebarOnSelect =
     contentType === 'images' ? handleSelectCategory :
@@ -402,9 +420,9 @@ const handleDeleteLcDeck = async (id) => {
     activeLcDeck
 
   const mainCards =
-  contentType === 'images' ? cards :
-  contentType === 'questions' ? questions :
-  []
+    contentType === 'images' ? cards :
+    contentType === 'questions' ? questions :
+    []
 
   const mainOnDeleteCategory =
     contentType === 'images' ? handleDeleteCategory :
