@@ -1,0 +1,192 @@
+.lc-panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-bg-overlay);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lc-panel {
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-container);
+  box-shadow: var(--shadow-overlay);
+  width: 640px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.lc-panel-header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 0.5px solid var(--color-border-default);
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.lc-panel-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-title);
+  flex: 1;
+}
+
+.lc-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.lc-panel-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.lc-empty {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+  padding: 8px 0;
+}
+
+.lc-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px;
+}
+
+.lc-card-thumb {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  background: var(--color-bg-surface);
+  border: 0.5px solid var(--color-border-default);
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  transition: border-color var(--motion-micro);
+}
+
+.lc-card-thumb:hover { border-color: var(--color-border-strong); }
+.lc-card-thumb.active { border-color: var(--color-border-input-focus); background: var(--color-bg-input-focus); }
+
+.lc-card-thumb-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+.lc-card-thumb-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.lc-card-thumb-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-btn-sm);
+  overflow: hidden;
+  border: 1.5px solid var(--color-border-default);
+  background: var(--color-bg-surface);
+}
+
+.lc-card-thumb-badge img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.lc-card-thumb-label {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.lc-card-thumb-delete {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  opacity: 0;
+  transition: opacity var(--motion-micro);
+}
+
+.lc-card-thumb:hover .lc-card-thumb-delete { opacity: 1; }
+
+.picker-dropdowns {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.picker-select {
+  flex: 1;
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0 32px 0 var(--space-3);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E6A5E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.picker-img-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  border: 0.5px solid var(--color-border-default);
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  transition: border-color var(--motion-micro), background var(--motion-micro);
+  background: var(--color-bg-surface);
+}
+
+.picker-img-item:hover { background: var(--color-bg-surface-raised); }
+.picker-img-item.selected { border-color: var(--color-border-input-focus); background: var(--color-bg-input-focus); }
+
+.picker-img-item img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+}
+
+.picker-img-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}

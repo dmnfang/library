@@ -11,6 +11,11 @@ import {
   fetchCards, addCard, updateCard, deleteCard, uploadImage,
   fetchUnits, addUnit, renameUnit, deleteUnit,
   fetchQuestions, addQuestion, updateQuestion, deleteQuestion, duplicateQuestion,
+  fetchLCDecks, addLCDeck, renameLCDeck, deleteLCDeck,
+  fetchLCModes, addLCMode, updateLCMode, deleteLCMode,
+  fetchLCVocab, addLCVocab, deleteLCVocab,
+  fetchLCCards, addLCCard, updateLCCard, deleteLCCard,
+  fetchLCLines, addLCLine, deleteLCLine,
 } from './lib/api'
 
 function App() {
@@ -25,12 +30,17 @@ function App() {
   const [contentType, setContentType] = useState('images')
   const [confirmDelete, setConfirmDelete] = useState(null)
 
-  // Questions side state
+  // Questions state
   const [units, setUnits] = useState([])
   const [activeUnit, setActiveUnit] = useState(null)
   const [questions, setQuestions] = useState([])
   const [questionCounts, setQuestionCounts] = useState({})
   const [modalQuestion, setModalQuestion] = useState(undefined)
+
+  // Lucky Card state
+const [lcDecks, setLcDecks] = useState([])
+const [activeLcDeck, setActiveLcDeck] = useState(null)
+const [lcModes, setLcModes] = useState([])
 
   useEffect(() => {
     fetchSources().then(data => {
@@ -78,6 +88,20 @@ function App() {
   }, [activeSource?.id, contentType])
 
   useEffect(() => {
+  if (!activeSource || contentType !== 'luckycard') return
+  setLcDecks([])
+  setActiveLcDeck(null)
+  setLcModes([])
+  fetchLCDecks(activeSource.id).then(setLcDecks)
+}, [activeSource?.id, contentType])
+
+  useEffect(() => {
+  if (!activeLcDeck) return
+  setLcModes([])
+  fetchLCModes(activeLcDeck.id).then(setLcModes)
+}, [activeLcDeck?.id])
+
+  useEffect(() => {
     if (!activeCategory) return
     setCards([])
     fetchCards(activeCategory.id).then(setCards)
@@ -93,19 +117,25 @@ function App() {
     setActiveSource(source)
     setActiveCategory(null)
     setActiveUnit(null)
+    setActiveLcDeck(null)
     setCards([])
     setQuestions([])
+    setLcModes([])
   }
 
   const handleContentTypeChange = (type) => {
     setContentType(type)
     setActiveCategory(null)
     setActiveUnit(null)
+    setActiveLcDeck(null)
     setCards([])
     setQuestions([])
+    setLcModes([])
     if (type === 'images') {
       setActiveSource(sources[0] || null)
-    } else {
+    } else if (type === 'questions') {
+      setActiveSource({ id: 'grade3', name: 'Grade 3' })
+    } else if (type === 'luckycard') {
       setActiveSource({ id: 'grade3', name: 'Grade 3' })
     }
   }
@@ -136,9 +166,7 @@ function App() {
     setCards([])
   }
 
-  const handleSelectCategory = (cat) => {
-    setActiveCategory(cat)
-  }
+  const handleSelectCategory = (cat) => setActiveCategory(cat)
 
   const handleAddCategory = async () => {
     const newCat = await addCategory(activeSource.id, 'New Category', categories.length)
@@ -168,9 +196,7 @@ function App() {
     setCards([])
   }
 
-  const handleSelectUnit = (unit) => {
-    setActiveUnit(unit)
-  }
+  const handleSelectUnit = (unit) => setActiveUnit(unit)
 
   const handleAddUnit = async () => {
     const newUnit = await addUnit(activeSource.id, 'New Unit', units.length)
@@ -240,18 +266,46 @@ function App() {
   }
 
   const handleDuplicateQuestion = async (question) => {
-  const originalIndex = questions.findIndex(q => q.id === question.id)
-  const insertPosition = originalIndex + 1
-  const newQ = await duplicateQuestion(question, insertPosition)
-  setQuestions(prev => [
-    ...prev.slice(0, insertPosition),
-    newQ,
-    ...prev.slice(insertPosition),
-  ])
-  setQuestionCounts(prev => ({
-    ...prev,
-    [activeUnit.id]: (prev[activeUnit.id] ?? 0) + 1
-  }))
+    const originalIndex = questions.findIndex(q => q.id === question.id)
+    const insertPosition = originalIndex + 1
+    const newQ = await duplicateQuestion(question, insertPosition)
+    setQuestions(prev => [
+      ...prev.slice(0, insertPosition),
+      newQ,
+      ...prev.slice(insertPosition),
+    ])
+    setQuestionCounts(prev => ({
+      ...prev,
+      [activeUnit.id]: (prev[activeUnit.id] ?? 0) + 1
+    }))
+  }
+
+  // Lucky Card handlers
+  const handleSelectLcDeck = (deck) => {
+  setActiveLcDeck(deck)
+  setLcModes([])
+}
+
+const handleAddLcDeck = async () => {
+  const newDeck = await addLCDeck(activeSource.id, 'New Deck', lcDecks.length)
+  setLcDecks(prev => [...prev, newDeck])
+  setActiveLcDeck(newDeck)
+  setLcModes([])
+}
+
+const handleRenameLcDeck = async (id, newName) => {
+  await renameLCDeck(id, newName)
+  setLcDecks(prev => prev.map(d =>
+    d.id === id ? { ...d, name: newName } : d
+  ))
+  setActiveLcDeck(prev => prev?.id === id ? { ...prev, name: newName } : prev)
+}
+
+const handleDeleteLcDeck = async (id) => {
+  await deleteLCDeck(id)
+  setLcDecks(prev => prev.filter(d => d.id !== id))
+  setActiveLcDeck(null)
+  setLcModes([])
 }
 
   const handleSaveCard = async ({ label, image_url }) => {
@@ -317,6 +371,61 @@ function App() {
     )
   }
 
+  const sidebarCategories =
+    contentType === 'images' ? categories :
+    contentType === 'questions' ? units :
+    lcDecks
+
+  const sidebarActiveCategory =
+    contentType === 'images' ? activeCategory :
+    contentType === 'questions' ? activeUnit :
+    activeLcDeck
+
+  const sidebarCardCounts =
+    contentType === 'images' ? cardCounts :
+    contentType === 'questions' ? questionCounts :
+    {}
+
+  const sidebarOnSelect =
+    contentType === 'images' ? handleSelectCategory :
+    contentType === 'questions' ? handleSelectUnit :
+    handleSelectLcDeck
+
+  const sidebarOnAdd =
+    contentType === 'images' ? handleAddCategory :
+    contentType === 'questions' ? handleAddUnit :
+    handleAddLcDeck
+
+  const mainCategory =
+    contentType === 'images' ? activeCategory :
+    contentType === 'questions' ? activeUnit :
+    activeLcDeck
+
+  const mainCards =
+  contentType === 'images' ? cards :
+  contentType === 'questions' ? questions :
+  []
+
+  const mainOnDeleteCategory =
+    contentType === 'images' ? handleDeleteCategory :
+    contentType === 'questions' ? handleDeleteUnit :
+    handleDeleteLcDeck
+
+  const mainOnCategoryRename =
+    contentType === 'images' ? handleCategoryRename :
+    contentType === 'questions' ? handleRenameUnit :
+    handleRenameLcDeck
+
+  const mainOnAddCard =
+    contentType === 'images' ? () => setModalCard(null) :
+    contentType === 'questions' ? () => setModalQuestion(null) :
+    null
+
+  const mainOnEditCard =
+    contentType === 'images' ? (card) => setModalCard(card) :
+    contentType === 'questions' ? (q) => setModalQuestion(q) :
+    null
+
   return (
     <div style={{
       display: 'flex',
@@ -335,26 +444,28 @@ function App() {
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <Sidebar
           source={activeSource}
-          categories={contentType === 'images' ? categories : units}
-          activeCategory={contentType === 'images' ? activeCategory : activeUnit}
-          cardCounts={contentType === 'images' ? cardCounts : questionCounts}
+          categories={sidebarCategories}
+          activeCategory={sidebarActiveCategory}
+          cardCounts={sidebarCardCounts}
           contentType={contentType}
-          onSelectCategory={contentType === 'images' ? handleSelectCategory : handleSelectUnit}
-          onAddCategory={contentType === 'images' ? handleAddCategory : handleAddUnit}
+          onSelectCategory={sidebarOnSelect}
+          onAddCategory={sidebarOnAdd}
           onRenameSource={handleRenameSource}
           onDeleteSource={handleDeleteSource}
         />
         <MainArea
-  category={contentType === 'images' ? activeCategory : activeUnit}
-  cards={contentType === 'images' ? cards : questions}
-  contentType={contentType}
-  onDeleteCategory={contentType === 'images' ? handleDeleteCategory : handleDeleteUnit}
-  onCategoryRename={contentType === 'images' ? handleCategoryRename : handleRenameUnit}
-  onAddCard={contentType === 'images' ? () => setModalCard(null) : () => setModalQuestion(null)}
-  onEditCard={contentType === 'images' ? (card) => setModalCard(card) : (q) => setModalQuestion(q)}
-  onBulkUpload={handleBulkUpload}
-  onDuplicateCard={contentType === 'questions' ? handleDuplicateQuestion : null}
-/>
+          category={mainCategory}
+          cards={mainCards}
+          contentType={contentType}
+          onDeleteCategory={mainOnDeleteCategory}
+          onCategoryRename={mainOnCategoryRename}
+          onAddCard={mainOnAddCard}
+          onEditCard={mainOnEditCard}
+          onBulkUpload={handleBulkUpload}
+          onDuplicateCard={contentType === 'questions' ? handleDuplicateQuestion : null}
+          lcModes={lcModes}
+          onLcModesChange={setLcModes}
+        />
       </div>
 
       {modalCard !== undefined && (

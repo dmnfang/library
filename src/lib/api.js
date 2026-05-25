@@ -234,3 +234,177 @@ export async function duplicateQuestion(question, position) {
   if (error) throw error
   return data
 }
+
+// ── LUCKY CARD DECKS ──
+
+export async function fetchLCDecks(gradeId) {
+  const { data, error } = await supabase
+    .from('lc_decks')
+    .select('*')
+    .eq('grade_id', gradeId)
+    .order('position')
+  if (error) throw error
+  return data
+}
+
+export async function addLCDeck(gradeId, name, position) {
+  const { data, error } = await supabase
+    .from('lc_decks')
+    .insert({ grade_id: gradeId, name, position })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function renameLCDeck(id, name) {
+  const { error } = await supabase
+    .from('lc_decks')
+    .update({ name })
+    .eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteLCDeck(id) {
+  const { error } = await supabase
+    .from('lc_decks')
+    .delete()
+    .eq('id', id)
+  if (error) throw error
+}
+
+// ── LUCKY CARD MODES ──
+
+export async function fetchLCModes(deckId) {
+  const { data, error } = await supabase
+    .from('lc_modes')
+    .select('*')
+    .eq('deck_id', deckId)
+    .order('position')
+  if (error) throw error
+  return data
+}
+
+export async function addLCMode(deckId, name, position) {
+  const { data, error } = await supabase
+    .from('lc_modes')
+    .insert({ deck_id: deckId, name, position })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updateLCMode(id, fields) {
+  const { error } = await supabase
+    .from('lc_modes')
+    .update(fields)
+    .eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteLCMode(id) {
+  const { error } = await supabase
+    .from('lc_modes')
+    .delete()
+    .eq('id', id)
+  if (error) throw error
+}
+
+// ── LUCKY CARD VOCAB ──
+
+export async function fetchLCVocab(modeId) {
+  const { data, error } = await supabase
+    .from('lc_vocab')
+    .select('*')
+    .eq('mode_id', modeId)
+    .order('position')
+  if (error) throw error
+  return data
+}
+
+export async function addLCVocab(modeId, label, image_url, position) {
+  const { data, error } = await supabase
+    .from('lc_vocab')
+    .insert({ mode_id: modeId, label, image_url, position })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function deleteLCVocab(id) {
+  const { error } = await supabase
+    .from('lc_vocab')
+    .delete()
+    .eq('id', id)
+  if (error) throw error
+}
+
+// ── LUCKY CARD CARDS ──
+
+export async function fetchLCCards(modeId) {
+  const { data, error } = await supabase
+    .from('lc_cards')
+    .select('*, vocab_a:vocab_a_id(*), vocab_b:vocab_b_id(*)')
+    .eq('mode_id', modeId)
+    .order('position')
+  if (error) throw error
+  return data
+}
+
+export async function addLCCard(modeId, vocab_a_id, vocab_b_id, position) {
+  const { data, error } = await supabase
+    .from('lc_cards')
+    .insert({ mode_id: modeId, vocab_a_id, vocab_b_id, position })
+    .select('*, vocab_a:vocab_a_id(*), vocab_b:vocab_b_id(*)')
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updateLCCard(id, fields) {
+  const { error } = await supabase
+    .from('lc_cards')
+    .update(fields)
+    .eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteLCCard(id) {
+  const { error } = await supabase
+    .from('lc_cards')
+    .delete()
+    .eq('id', id)
+  if (error) throw error
+}
+
+// ── LUCKY CARD LINES ──
+
+export async function fetchLCLines(modeId) {
+  const { data, error } = await supabase
+    .from('lc_lines')
+    .select('*')
+    .eq('mode_id', modeId)
+    .order('position')
+  if (error) throw error
+  return data
+}
+
+export async function addLCLine(modeId, speaker, text, position) {
+  const { data, error } = await supabase
+    .from('lc_lines')
+    .insert({ mode_id: modeId, speaker, text, position })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function deleteLCLine(id) {
+  const { error } = await supabase
+    .from('lc_lines')
+    .delete()
+    .eq('id', id)
+  if (error) throw error
+}

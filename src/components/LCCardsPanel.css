@@ -1,0 +1,37 @@
+.lc-card-picker-item {
+  cursor: pointer;
+  position: relative;
+}
+
+.lc-card-picker-item.tag-main {
+  border-color: var(--color-border-input-focus);
+  background: var(--color-bg-input-focus);
+}
+
+.lc-card-picker-item.tag-badge {
+  border-color: var(--clr-coral-400);
+  background: var(--clr-coral-50);
+}
+
+.lc-vocab-tag {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lc-vocab-tag--main {
+  background: var(--color-border-input-focus);
+  color: white;
+}
+
+.lc-vocab-tag--badge {
+  background: var(--clr-coral-400);
+  color: white;
+}

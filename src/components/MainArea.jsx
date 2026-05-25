@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import './MainArea.css'
 import ImageCard from './ImageCard'
 import QuestionCard from './QuestionCard'
+import LCDeckArea from './LCDeckArea'
 
-function MainArea({ category, cards, contentType, onDeleteCategory, onCategoryRename, onAddCard, onEditCard, onBulkUpload, onDuplicateCard }) {
+function MainArea({ category, cards, contentType, onDeleteCategory, onCategoryRename, onAddCard, onEditCard, onBulkUpload, onDuplicateCard, lcModes, onLcModesChange }) {
   const [titleValue, setTitleValue] = useState('')
   const [dragging, setDragging] = useState(false)
   const bulkInputRef = useRef(null)
@@ -26,6 +27,33 @@ function MainArea({ category, cards, contentType, onDeleteCategory, onCategoryRe
   }
 
   const isQuestions = contentType === 'questions'
+  const isLuckyCard = contentType === 'luckycard'
+
+  // Lucky Card mode
+  if (isLuckyCard) {
+    if (!category) {
+      return (
+        <div className="main-area" style={{ background: 'var(--color-bg-page)' }}>
+          <div className="empty-state">
+            <i className="ti ti-folder-open empty-state-icon" />
+            <span className="empty-state-title">No deck selected</span>
+            <span className="empty-state-sub">Choose one from the sidebar</span>
+          </div>
+        </div>
+      )
+    }
+    return (
+      <div className="main-area">
+        <LCDeckArea
+          deck={category}
+          lcModes={lcModes}
+          onLcModesChange={onLcModesChange}
+          onRenameDeck={onCategoryRename}
+          onDeleteDeck={onDeleteCategory}
+      />
+      </div>
+    )
+  }
 
   if (!category) {
     return (
@@ -116,13 +144,13 @@ function MainArea({ category, cards, contentType, onDeleteCategory, onCategoryRe
           <div className={isQuestions ? 'question-grid' : 'main-grid'}>
             {isQuestions ? (
               cards.map(question => (
-  <QuestionCard
-    key={question.id}
-    question={question}
-    onEdit={onEditCard}
-    onDuplicate={onDuplicateCard}
-  />
-))
+                <QuestionCard
+                  key={question.id}
+                  question={question}
+                  onEdit={onEditCard}
+                  onDuplicate={onDuplicateCard}
+                />
+              ))
             ) : (
               cards.map(card => (
                 <ImageCard

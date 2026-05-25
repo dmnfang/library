@@ -4,6 +4,20 @@ import './Topbar.css'
 const CONTENT_TYPES = [
   { id: 'images', label: 'Images' },
   { id: 'questions', label: 'Questions' },
+  { id: 'luckycard', label: 'Lucky Card' },
+]
+
+const ALL_GRADES = [
+  { id: 'grade12', name: 'Grade 1 & 2' },
+  { id: 'grade3', name: 'Grade 3' },
+  { id: 'grade4', name: 'Grade 4' },
+  { id: 'grade5', name: 'Grade 5' },
+  { id: 'grade6', name: 'Grade 6' },
+]
+
+const LC_GRADES = [
+  { id: 'grade3', name: 'Grade 3' },
+  { id: 'grade4', name: 'Grade 4' },
 ]
 
 function Topbar({ activeSource, onSourceChange, sources, onAddSource, contentType, onContentTypeChange }) {
@@ -22,15 +36,13 @@ function Topbar({ activeSource, onSourceChange, sources, onAddSource, contentTyp
 
   const activeContentType = CONTENT_TYPES.find(t => t.id === contentType) || CONTENT_TYPES[0]
 
-  const grades = [
-  { id: 'grade12', name: 'Grade 1 & 2' },
-  { id: 'grade3', name: 'Grade 3' },
-  { id: 'grade4', name: 'Grade 4' },
-  { id: 'grade5', name: 'Grade 5' },
-  { id: 'grade6', name: 'Grade 6' },
-]
+  const getTabs = () => {
+    if (contentType === 'questions') return ALL_GRADES
+    if (contentType === 'luckycard') return LC_GRADES
+    return null
+  }
 
-  const tabs = contentType === 'questions' ? grades : sources
+  const tabs = getTabs()
 
   return (
     <div className="topbar">
@@ -67,10 +79,10 @@ function Topbar({ activeSource, onSourceChange, sources, onAddSource, contentTyp
         )}
       </div>
 
-      {/* Tabs — sources or grades depending on mode */}
+      {/* Tabs */}
       <div className="topbar-tabs">
-        {contentType === 'questions' ? (
-          grades.map(grade => (
+        {tabs ? (
+          tabs.map(grade => (
             <button
               key={grade.id}
               onClick={() => onSourceChange(grade)}
@@ -98,11 +110,11 @@ function Topbar({ activeSource, onSourceChange, sources, onAddSource, contentTyp
 
       {/* Right action button */}
       {contentType === 'images' && (
-  <button className="btn btn-secondary btn-md" onClick={onAddSource}>
-    <i className="ti ti-plus" style={{ fontSize: '16px' }} />
-    Group
-  </button>
-)}
+        <button className="btn btn-secondary btn-md" onClick={onAddSource}>
+          <i className="ti ti-plus" style={{ fontSize: '16px' }} />
+          Group
+        </button>
+      )}
     </div>
   )
 }

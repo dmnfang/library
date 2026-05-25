@@ -55,7 +55,7 @@ function Sidebar({ source, categories, activeCategory, cardCounts, contentType, 
           style={{ width: '100%' }}
         >
           <i className="ti ti-plus" style={{ fontSize: '16px' }} />
-          {contentType === 'questions' ? 'Unit' : 'Category'}
+          {contentType === 'questions' ? 'Unit' : contentType === 'luckycard' ? 'Deck' : 'Category'}
         </button>
       </div>
 
@@ -63,7 +63,7 @@ function Sidebar({ source, categories, activeCategory, cardCounts, contentType, 
         {categories.length === 0 ? (
           <div className="sidebar-empty">
             <i className="ti ti-folder-open" />
-            No {contentType === 'questions' ? 'units' : 'categories'} yet
+            No {contentType === 'questions' ? 'units' : contentType === 'luckycard' ? 'decks' : 'categories'} yet
           </div>
         ) : (
           categories.map(cat => {
