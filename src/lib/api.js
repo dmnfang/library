@@ -408,3 +408,11 @@ export async function deleteLCLine(id) {
     .eq('id', id)
   if (error) throw error
 }
+
+export async function updateLCLine(id, fields) {
+  const { error } = await supabase
+    .from('lc_lines')
+    .update(fields)
+    .eq('id', id)
+  if (error) throw error
+}

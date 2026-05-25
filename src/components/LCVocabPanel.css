@@ -190,3 +190,7 @@
   text-overflow: ellipsis;
   width: 100%;
 }
+
+.lc-script-line.editing .lc-script-line-bubble {
+  outline: 2px solid var(--color-border-input-focus);
+}
