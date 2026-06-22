@@ -18,6 +18,8 @@ const ALL_GRADES = [
 const LC_GRADES = [
   { id: 'grade3', name: 'Grade 3' },
   { id: 'grade4', name: 'Grade 4' },
+  { id: 'grade5', name: 'Grade 5' },
+  { id: 'grade6', name: 'Grade 6' },
 ]
 
 function Topbar({ activeSource, onSourceChange, sources, onAddSource, contentType, onContentTypeChange }) {

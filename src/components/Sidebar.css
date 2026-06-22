@@ -156,3 +156,29 @@
   background: var(--color-text-primary);
   color: var(--clr-neutral-0);
 }
+
+/* Cardbox-enabled toggle on deck rows */
+.cat-cardbox-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--stroke-default);
+  background: var(--surface-card);
+  color: var(--text-disabled, #B0A890);
+  font-size: 14px;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.cat-cardbox-toggle:hover {
+  border-color: var(--sage, #80C8A0);
+}
+
+.cat-cardbox-toggle.active {
+  background: var(--sage-subtle, #E3F5EC);
+  border-color: var(--sage, #80C8A0);
+  color: var(--sage, #80C8A0);
+}
