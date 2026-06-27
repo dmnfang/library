@@ -174,9 +174,18 @@ function MainArea({
 
       <div
         className={`main-grid-area ${dragging ? 'dragging' : ''}`}
-        onDragOver={!isQuestions ? (e => { e.preventDefault(); setDragging(true) }) : undefined}
+        onDragOver={!isQuestions ? (e => {
+          e.preventDefault()
+          if (e.dataTransfer.types.includes('Files')) setDragging(true)
+        }) : undefined}
         onDragLeave={!isQuestions ? (e => { if (!e.currentTarget.contains(e.relatedTarget)) setDragging(false) }) : undefined}
-        onDrop={!isQuestions ? handleBulkDrop : undefined}
+        onDrop={!isQuestions ? (e => {
+          e.preventDefault()
+          setDragging(false)
+          if (!e.dataTransfer.types.includes('Files')) return
+          const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'))
+          if (files.length > 0) onBulkUpload(files)
+        }) : undefined}
       >
         {(cards?.length ?? 0) === 0 ? (
           <div className="main-empty">
