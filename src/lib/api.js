@@ -416,3 +416,31 @@ export async function updateLCLine(id, fields) {
     .eq('id', id)
   if (error) throw error
 }
+
+// ── ADD these two functions to lib/api.js ──
+
+// In the CARDS section, after updateCard:
+
+export async function updateCardPositions(cards) {
+  const updates = cards.map((card, index) => ({
+    id: card.id,
+    category_id: card.category_id,
+    label: card.label,
+    image_url: card.image_url,
+    position: index,
+  }))
+  const { error } = await supabase
+    .from('cards')
+    .upsert(updates)
+  if (error) throw error
+}
+
+// In the CATEGORIES section, after renameCategory:
+
+export async function setCategoryCardboxEnabled(id, enabled) {
+  const { error } = await supabase
+    .from('categories')
+    .update({ cardbox_enabled: enabled })
+    .eq('id', id)
+  if (error) throw error
+}

@@ -4,9 +4,17 @@ import ImageCard from './ImageCard'
 import QuestionCard from './QuestionCard'
 import LCDeckArea from './LCDeckArea'
 
-function MainArea({ category, cards, contentType, onDeleteCategory, onCategoryRename, onAddCard, onEditCard, onBulkUpload, onDuplicateCard, lcModes, onLcModesChange }) {
+function MainArea({
+  category, cards, contentType,
+  onDeleteCategory, onCategoryRename, onAddCard, onEditCard,
+  onBulkUpload, onDuplicateCard,
+  lcModes, onLcModesChange,
+  onReorderCards, onToggleCardbox,
+}) {
   const [titleValue, setTitleValue] = useState('')
   const [dragging, setDragging] = useState(false)
+  const [dragId, setDragId] = useState(null)
+  const [dragOverId, setDragOverId] = useState(null)
   const bulkInputRef = useRef(null)
 
   useEffect(() => {
@@ -26,8 +34,35 @@ function MainArea({ category, cards, contentType, onDeleteCategory, onCategoryRe
     e.target.value = ''
   }
 
+  const handleCardDragStart = (id) => {
+    setDragId(id)
+  }
+
+  const handleCardDragOver = (id) => {
+    if (id !== dragId) setDragOverId(id)
+  }
+
+  const handleCardDrop = (targetId) => {
+    if (!dragId || dragId === targetId) return
+    const from = cards.findIndex(c => c.id === dragId)
+    const to = cards.findIndex(c => c.id === targetId)
+    if (from === -1 || to === -1) return
+    const reordered = [...cards]
+    const [moved] = reordered.splice(from, 1)
+    reordered.splice(to, 0, moved)
+    onReorderCards(reordered)
+    setDragId(null)
+    setDragOverId(null)
+  }
+
+  const handleCardDragEnd = () => {
+    setDragId(null)
+    setDragOverId(null)
+  }
+
   const isQuestions = contentType === 'questions'
   const isLuckyCard = contentType === 'luckycard'
+  const isImages = contentType === 'images'
 
   // Lucky Card mode
   if (isLuckyCard) {
@@ -50,7 +85,7 @@ function MainArea({ category, cards, contentType, onDeleteCategory, onCategoryRe
           onLcModesChange={onLcModesChange}
           onRenameDeck={onCategoryRename}
           onDeleteDeck={onDeleteCategory}
-      />
+        />
       </div>
     )
   }
@@ -66,6 +101,8 @@ function MainArea({ category, cards, contentType, onDeleteCategory, onCategoryRe
       </div>
     )
   }
+
+  const cardboxEnabled = category?.cardbox_enabled ?? false
 
   return (
     <div className="main-area">
@@ -95,6 +132,19 @@ function MainArea({ category, cards, contentType, onDeleteCategory, onCategoryRe
           >
             <i className="ti ti-trash" />
           </button>
+
+          {/* Cardbox toggle — Images only */}
+          {isImages && (
+            <button
+              className={`btn btn-md cardbox-toggle ${cardboxEnabled ? 'cardbox-toggle-on' : 'cardbox-toggle-off'}`}
+              onClick={() => onToggleCardbox(category.id, !cardboxEnabled)}
+              title={cardboxEnabled ? 'Visible in Cardbox — click to hide' : 'Hidden from Cardbox — click to show'}
+            >
+              <i className="ti ti-cards" style={{ fontSize: '14px' }} />
+              Cardbox
+            </button>
+          )}
+
           {!isQuestions && (
             <button
               className="btn btn-secondary btn-md"
@@ -157,6 +207,11 @@ function MainArea({ category, cards, contentType, onDeleteCategory, onCategoryRe
                   key={card.id}
                   card={card}
                   onEdit={onEditCard}
+                  onDragStart={handleCardDragStart}
+                  onDragOver={handleCardDragOver}
+                  onDrop={handleCardDrop}
+                  onDragEnd={handleCardDragEnd}
+                  isDragOver={dragOverId === card.id}
                 />
               ))
             )}

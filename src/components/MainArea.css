@@ -130,3 +130,37 @@
   flex-direction: column;
   gap: 16px;
 }
+
+/* ── ADD THESE to the bottom of MainArea.css ── */
+
+.cardbox-toggle {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 999px;
+  transition: background var(--motion-micro), color var(--motion-micro), border-color var(--motion-micro);
+}
+
+.cardbox-toggle-on {
+  background: color-mix(in srgb, var(--green) 15%, transparent);
+  color: var(--green);
+  border: 1px solid color-mix(in srgb, var(--green) 40%, transparent);
+}
+
+.cardbox-toggle-on:hover {
+  background: color-mix(in srgb, var(--green) 22%, transparent);
+}
+
+.cardbox-toggle-off {
+  background: var(--color-bg-surface);
+  color: var(--color-text-tertiary);
+  border: 1px solid var(--color-border-default);
+}
+
+.cardbox-toggle-off:hover {
+  color: var(--color-text-secondary);
+  border-color: var(--color-border-strong);
+}

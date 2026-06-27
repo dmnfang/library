@@ -5,6 +5,7 @@
   overflow: hidden;
   cursor: pointer;
   transition: box-shadow var(--motion-micro);
+  position: relative;
 }
 
 .image-card:hover {
@@ -13,6 +14,40 @@
 
 .image-card:hover .image-card-edit-btn {
   opacity: 1;
+}
+
+.image-card:hover .image-card-drag-handle {
+  opacity: 1;
+}
+
+.image-card.drag-over {
+  outline: 2px solid var(--green);
+  outline-offset: -2px;
+}
+
+/* Drag handle — top left, appears on hover */
+.image-card-drag-handle {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity var(--motion-micro);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm, 6px);
+  background: rgba(255, 255, 255, 0.85);
+  border: 0.5px solid var(--color-border-default);
+  cursor: grab;
+  color: var(--color-text-tertiary);
+  font-size: 14px;
+}
+
+.image-card-drag-handle:active {
+  cursor: grabbing;
 }
 
 .image-card-img-area {

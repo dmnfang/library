@@ -16,6 +16,8 @@ import {
   fetchLCVocab, addLCVocab, deleteLCVocab,
   fetchLCCards, addLCCard, updateLCCard, deleteLCCard,
   fetchLCLines, addLCLine, deleteLCLine,
+  updateCardPositions,
+  setCategoryCardboxEnabled,
 } from './lib/api'
 
 function App() {
@@ -41,7 +43,6 @@ function App() {
   const [lcModes, setLcModes] = useState([])
   const [lcModeCounts, setLcModeCounts] = useState({})
 
-  // Track a fetch key to force re-fetch when needed
   const [lcFetchKey, setLcFetchKey] = useState(0)
 
   useEffect(() => {
@@ -373,6 +374,30 @@ function App() {
     }))
   }
 
+  const handleReorderCards = async (reordered) => {
+    setCards(reordered)
+    try {
+      await updateCardPositions(reordered)
+    } catch (err) {
+      console.error('Failed to save card order:', err)
+      fetchCards(activeCategory.id).then(setCards)
+    }
+  }
+
+  const handleToggleCardbox = async (id, enabled) => {
+    try {
+      await setCategoryCardboxEnabled(id, enabled)
+      setCategories(prev => prev.map(c =>
+        c.id === id ? { ...c, cardbox_enabled: enabled } : c
+      ))
+      setActiveCategory(prev =>
+        prev?.id === id ? { ...prev, cardbox_enabled: enabled } : prev
+      )
+    } catch (err) {
+      console.error('Failed to update cardbox visibility:', err)
+    }
+  }
+
   if (loading) {
     return (
       <div style={{
@@ -483,6 +508,8 @@ function App() {
           onDuplicateCard={contentType === 'questions' ? handleDuplicateQuestion : null}
           lcModes={lcModes}
           onLcModesChange={setLcModes}
+          onReorderCards={handleReorderCards}
+          onToggleCardbox={handleToggleCardbox}
         />
       </div>
 
