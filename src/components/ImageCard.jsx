@@ -1,17 +1,16 @@
 import './ImageCard.css'
 
-function ImageCard({ card, onEdit, onDragStart, onDragOver, onDrop, onDragEnd, isDragOver }) {
+function ImageCard({ card, onEdit, onDragStart, onDragOver, onDrop, onDragEnd, isDragOver, isDragging }) {
   return (
     <div
-      className={`image-card ${isDragOver ? 'drag-over' : ''}`}
-      onClick={() => onEdit(card)}
+      className={`image-row ${isDragOver ? 'drag-over' : ''} ${isDragging ? 'dragging' : ''}`}
       onDragOver={e => { e.preventDefault(); onDragOver?.(card.id) }}
       onDrop={e => { e.preventDefault(); onDrop?.(card.id) }}
       onDragEnd={onDragEnd}
     >
       {/* Drag handle */}
       <div
-        className="image-card-drag-handle"
+        className="image-row-handle"
         draggable
         onDragStart={e => {
           e.stopPropagation()
@@ -23,23 +22,24 @@ function ImageCard({ card, onEdit, onDragStart, onDragOver, onDrop, onDragEnd, i
         <i className="ti ti-grip-vertical" />
       </div>
 
-      <div className="image-card-img-area">
-        {card.image_url ? (
-          <img src={card.image_url} alt={card.label} />
-        ) : (
-          <div className="image-card-placeholder">
-            <i className="ti ti-photo" />
-          </div>
-        )}
-        <button
-          className="image-card-edit-btn btn-icon-only btn-md"
-          onClick={e => { e.stopPropagation(); onEdit(card) }}
-          aria-label="Edit card"
-        >
-          <i className="ti ti-edit" />
-        </button>
+      {/* Thumbnail */}
+      <div className="image-row-thumb">
+        {card.image_url
+          ? <img src={card.image_url} alt={card.label} />
+          : <i className="ti ti-photo" />}
       </div>
-      <div className="image-card-label">{card.label}</div>
+
+      {/* Label */}
+      <span className="image-row-label">{card.label}</span>
+
+      {/* Edit button */}
+      <button
+        className="image-row-edit btn-icon-only btn-md"
+        onClick={() => onEdit(card)}
+        aria-label="Edit card"
+      >
+        <i className="ti ti-edit" />
+      </button>
     </div>
   )
 }

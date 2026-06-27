@@ -200,7 +200,7 @@ function MainArea({
             </span>
           </div>
         ) : (
-          <div className={isQuestions ? 'question-grid' : 'main-grid'}>
+          <div className={isQuestions ? 'question-grid' : 'main-list'}>
             {isQuestions ? (
               cards.map(question => (
                 <QuestionCard
@@ -221,6 +221,7 @@ function MainArea({
                   onDrop={handleCardDrop}
                   onDragEnd={handleCardDragEnd}
                   isDragOver={dragOverId === card.id}
+                  isDragging={dragId === card.id}
                 />
               ))
             )}

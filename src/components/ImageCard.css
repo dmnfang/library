@@ -1,99 +1,95 @@
-.image-card {
+.image-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px 8px 8px;
   background: var(--color-bg-surface);
   border: 0.5px solid var(--color-border-default);
   border-radius: var(--radius-card);
-  overflow: hidden;
-  cursor: pointer;
+  cursor: default;
   transition: box-shadow var(--motion-micro);
   position: relative;
 }
 
-.image-card:hover {
+.image-row:hover {
   box-shadow: var(--shadow-raised);
 }
 
-.image-card:hover .image-card-edit-btn {
+.image-row:hover .image-row-edit {
   opacity: 1;
 }
 
-.image-card:hover .image-card-drag-handle {
-  opacity: 1;
+/* Insertion line above the hovered row */
+.image-row.drag-over {
+  border-top: 2px solid var(--green);
 }
 
-.image-card.drag-over {
-  outline: 2px solid var(--green);
-  outline-offset: -2px;
+/* Fade out the card being dragged */
+.image-row.dragging {
+  opacity: 0.4;
 }
 
-/* Drag handle — top left, appears on hover */
-.image-card-drag-handle {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  z-index: 2;
-  opacity: 0;
-  transition: opacity var(--motion-micro);
+/* Drag handle */
+.image-row-handle {
+  flex-shrink: 0;
   width: 28px;
   height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-sm, 6px);
-  background: rgba(255, 255, 255, 0.85);
-  border: 0.5px solid var(--color-border-default);
-  cursor: grab;
   color: var(--color-text-tertiary);
-  font-size: 14px;
+  cursor: grab;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: color var(--motion-micro);
 }
 
-.image-card-drag-handle:active {
+.image-row-handle:hover {
+  color: var(--color-text-primary);
+}
+
+.image-row-handle:active {
   cursor: grabbing;
 }
 
-.image-card-img-area {
-  position: relative;
-  aspect-ratio: 1;
+/* Thumbnail */
+.image-row-thumb {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
   background: var(--color-bg-surface-raised);
+  border: 0.5px solid var(--color-border-default);
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  color: var(--color-text-tertiary);
+  font-size: 20px;
 }
 
-.image-card-img-area img {
+.image-row-thumb img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  padding: 8px;
+  padding: 4px;
 }
 
-.image-card-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  color: var(--color-text-tertiary);
-  font-size: 32px;
-}
-
-.image-card-edit-btn {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  opacity: 0;
-  transition: opacity var(--motion-micro);
-}
-
-.image-card-label {
-  padding: 8px 8px;
+/* Label */
+.image-row-label {
+  flex: 1;
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
-  line-height: 16px;
   color: var(--color-text-primary);
-  text-align: center;
-  border-top: 0.5px solid var(--color-border-default);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Edit button — hidden until hover */
+.image-row-edit {
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--motion-micro);
 }

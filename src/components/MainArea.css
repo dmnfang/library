@@ -133,6 +133,12 @@
 
 /* ── ADD THESE to the bottom of MainArea.css ── */
 
+.main-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .cardbox-toggle {
   font-family: var(--font-body);
   font-size: 13px;
