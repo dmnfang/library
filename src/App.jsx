@@ -461,7 +461,7 @@ function App() {
 
   const handleAddBlocksUnit = async () => {
     const sort_order = blocksUnits.length
-    const newUnit = await addBlocksUnit(activeSource.id, 'Unit ' + (blocksUnits.length + 1), 'New Unit', sort_order)
+    const newUnit = await addBlocksUnit(activeSource.id, 'New Unit', 'New Unit', sort_order)
     setBlocksUnits(prev => [...prev, newUnit])
     setBlocksUnitCounts(prev => ({ ...prev, [newUnit.id]: 0 }))
     setActiveBlocksUnit(newUnit)
