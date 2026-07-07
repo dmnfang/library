@@ -444,3 +444,118 @@ export async function setCategoryCardboxEnabled(id, enabled) {
     .eq('id', id)
   if (error) throw error
 }
+
+// ── BLOCKS UNITS ──
+// Append these to lib/api.js
+
+export async function fetchBlocksUnits(grade) {
+  const { data, error } = await supabase
+    .from('blocks_units')
+    .select('*')
+    .eq('grade', grade)
+    .order('sort_order')
+  if (error) throw error
+  return data
+}
+
+export async function addBlocksUnit(grade, name, title, sort_order) {
+  const { data, error } = await supabase
+    .from('blocks_units')
+    .insert({ grade, name, title, sort_order })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function renameBlocksUnit(id, name, title) {
+  const { error } = await supabase
+    .from('blocks_units')
+    .update({ name, title })
+    .eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteBlocksUnit(id) {
+  const { error } = await supabase
+    .from('blocks_units')
+    .delete()
+    .eq('id', id)
+  if (error) throw error
+}
+
+// ── BLOCKS PATTERNS ──
+
+export async function fetchBlocksPatterns(unitId) {
+  const { data, error } = await supabase
+    .from('blocks_patterns')
+    .select('*')
+    .eq('unit_id', unitId)
+    .order('sort_order')
+  if (error) throw error
+  return data
+}
+
+export async function addBlocksPattern(unitId, frame, gloss, sort_order) {
+  const { data, error } = await supabase
+    .from('blocks_patterns')
+    .insert({ unit_id: unitId, frame, gloss, sort_order })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updateBlocksPattern(id, fields) {
+  const { error } = await supabase
+    .from('blocks_patterns')
+    .update(fields)
+    .eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteBlocksPattern(id) {
+  const { error } = await supabase
+    .from('blocks_patterns')
+    .delete()
+    .eq('id', id)
+  if (error) throw error
+}
+
+// ── BLOCKS SENTENCES ──
+
+export async function fetchBlocksSentences(patternId) {
+  const { data, error } = await supabase
+    .from('blocks_sentences')
+    .select('*')
+    .eq('pattern_id', patternId)
+    .order('sort_order')
+  if (error) throw error
+  return data
+}
+
+export async function addBlocksSentence(patternId, jp, tier, chunks, sort_order) {
+  const { data, error } = await supabase
+    .from('blocks_sentences')
+    .insert({ pattern_id: patternId, jp, tier, chunks, sort_order })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updateBlocksSentence(id, fields) {
+  const { error } = await supabase
+    .from('blocks_sentences')
+    .update(fields)
+    .eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteBlocksSentence(id) {
+  const { error } = await supabase
+    .from('blocks_sentences')
+    .delete()
+    .eq('id', id)
+  if (error) throw error
+}

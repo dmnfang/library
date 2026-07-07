@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Topbar from './components/Topbar'
 import Sidebar from './components/Sidebar'
 import MainArea from './components/MainArea'
+import BlocksArea from './components/BlocksArea'
 import CardModal from './components/CardModal'
 import ConfirmModal from './components/ConfirmModal'
 import QuestionModal from './components/QuestionModal'
@@ -18,6 +19,9 @@ import {
   fetchLCLines, addLCLine, deleteLCLine,
   updateCardPositions,
   setCategoryCardboxEnabled,
+  fetchBlocksUnits, addBlocksUnit, renameBlocksUnit, deleteBlocksUnit,
+  fetchBlocksPatterns, addBlocksPattern, updateBlocksPattern, deleteBlocksPattern,
+  fetchBlocksSentences, addBlocksSentence, updateBlocksSentence, deleteBlocksSentence,
 } from './lib/api'
 
 function App() {
@@ -42,8 +46,14 @@ function App() {
   const [activeLcDeck, setActiveLcDeck] = useState(null)
   const [lcModes, setLcModes] = useState([])
   const [lcModeCounts, setLcModeCounts] = useState({})
-
   const [lcFetchKey, setLcFetchKey] = useState(0)
+
+  // ── Blocks state ──
+  const [blocksUnits, setBlocksUnits] = useState([])
+  const [activeBlocksUnit, setActiveBlocksUnit] = useState(null)
+  const [blocksPatterns, setBlocksPatterns] = useState([]) // pattern[]
+  const [blocksSentences, setBlocksSentences] = useState({}) // { [patternId]: sentence[] }
+  const [blocksUnitCounts, setBlocksUnitCounts] = useState({}) // { [unitId]: patternCount }
 
   useEffect(() => {
     fetchSources().then(data => {
@@ -125,14 +135,52 @@ function App() {
     fetchQuestions(activeUnit.id).then(setQuestions)
   }, [activeUnit?.id])
 
+  // Fetch blocks units when grade changes
+  useEffect(() => {
+    if (contentType !== 'blocks' || !activeSource) return
+    setBlocksUnits([])
+    setActiveBlocksUnit(null)
+    setBlocksPatterns([])
+    setBlocksSentences({})
+    setBlocksUnitCounts({})
+    fetchBlocksUnits(activeSource.id).then(async (unitList) => {
+      setBlocksUnits(unitList)
+      const counts = {}
+      await Promise.all(unitList.map(async (u) => {
+        const patterns = await fetchBlocksPatterns(u.id)
+        counts[u.id] = patterns.length
+      }))
+      setBlocksUnitCounts(counts)
+    })
+  }, [activeSource?.id, contentType])
+
+  // Fetch patterns + sentences when blocks unit changes
+  useEffect(() => {
+    if (!activeBlocksUnit) return
+    setBlocksPatterns([])
+    setBlocksSentences({})
+    fetchBlocksPatterns(activeBlocksUnit.id).then(async (patterns) => {
+      setBlocksPatterns(patterns)
+      const sentMap = {}
+      await Promise.all(patterns.map(async (p) => {
+        const sents = await fetchBlocksSentences(p.id)
+        sentMap[p.id] = sents
+      }))
+      setBlocksSentences(sentMap)
+    })
+  }, [activeBlocksUnit?.id])
+
   const handleSourceChange = (source) => {
     setActiveSource(source)
     setActiveCategory(null)
     setActiveUnit(null)
     setActiveLcDeck(null)
+    setActiveBlocksUnit(null)
     setCards([])
     setQuestions([])
     setLcModes([])
+    setBlocksPatterns([])
+    setBlocksSentences({})
     if (contentType === 'luckycard') setLcFetchKey(k => k + 1)
   }
 
@@ -141,9 +189,12 @@ function App() {
     setActiveCategory(null)
     setActiveUnit(null)
     setActiveLcDeck(null)
+    setActiveBlocksUnit(null)
     setCards([])
     setQuestions([])
     setLcModes([])
+    setBlocksPatterns([])
+    setBlocksSentences({})
     if (type === 'images') {
       setActiveSource(sources[0] || null)
     } else if (type === 'questions') {
@@ -151,6 +202,8 @@ function App() {
     } else if (type === 'luckycard') {
       setActiveSource({ id: 'grade3', name: 'Grade 3' })
       setLcFetchKey(k => k + 1)
+    } else if (type === 'blocks') {
+      setActiveSource({ id: '5', name: 'Grade 5' })
     }
   }
 
@@ -398,6 +451,95 @@ function App() {
     }
   }
 
+  // ── Blocks handlers ──
+
+  const handleSelectBlocksUnit = (unit) => {
+    setActiveBlocksUnit(unit)
+    setBlocksPatterns([])
+    setBlocksSentences({})
+  }
+
+  const handleAddBlocksUnit = async () => {
+    const sort_order = blocksUnits.length
+    const newUnit = await addBlocksUnit(activeSource.id, 'Unit ' + (blocksUnits.length + 1), 'New Unit', sort_order)
+    setBlocksUnits(prev => [...prev, newUnit])
+    setBlocksUnitCounts(prev => ({ ...prev, [newUnit.id]: 0 }))
+    setActiveBlocksUnit(newUnit)
+    setBlocksPatterns([])
+    setBlocksSentences({})
+  }
+
+  const handleDeleteBlocksUnit = async (id) => {
+    await deleteBlocksUnit(id)
+    setBlocksUnits(prev => prev.filter(u => u.id !== id))
+    setBlocksUnitCounts(prev => {
+      const updated = { ...prev }
+      delete updated[id]
+      return updated
+    })
+    setActiveBlocksUnit(null)
+    setBlocksPatterns([])
+    setBlocksSentences({})
+  }
+
+  const handleAddBlocksPattern = async (unitId, fields, sort_order) => {
+    const newPattern = await addBlocksPattern(unitId, fields.frame, fields.gloss, sort_order)
+    setBlocksPatterns(prev => [...prev, newPattern])
+    setBlocksSentences(prev => ({ ...prev, [newPattern.id]: [] }))
+    setBlocksUnitCounts(prev => ({ ...prev, [unitId]: (prev[unitId] ?? 0) + 1 }))
+  }
+
+  const handleUpdateBlocksPattern = async (id, fields) => {
+    await updateBlocksPattern(id, fields)
+    setBlocksPatterns(prev => prev.map(p => p.id === id ? { ...p, ...fields } : p))
+  }
+
+  const handleDeleteBlocksPattern = async (id) => {
+    await deleteBlocksPattern(id)
+    setBlocksPatterns(prev => prev.filter(p => p.id !== id))
+    setBlocksSentences(prev => {
+      const updated = { ...prev }
+      delete updated[id]
+      return updated
+    })
+    if (activeBlocksUnit) {
+      setBlocksUnitCounts(prev => ({
+        ...prev,
+        [activeBlocksUnit.id]: Math.max(0, (prev[activeBlocksUnit.id] ?? 1) - 1)
+      }))
+    }
+  }
+
+  const handleAddBlocksSentence = async (patternId, { chunks, jp, tier }, sort_order) => {
+    const newSentence = await addBlocksSentence(patternId, jp, tier, chunks, sort_order)
+    setBlocksSentences(prev => ({
+      ...prev,
+      [patternId]: [...(prev[patternId] || []), newSentence]
+    }))
+  }
+
+  const handleUpdateBlocksSentence = async (id, { chunks, jp, tier }) => {
+    await updateBlocksSentence(id, { chunks, jp, tier })
+    setBlocksSentences(prev => {
+      const updated = { ...prev }
+      for (const pid of Object.keys(updated)) {
+        updated[pid] = updated[pid].map(s => s.id === id ? { ...s, chunks, jp, tier } : s)
+      }
+      return updated
+    })
+  }
+
+  const handleDeleteBlocksSentence = async (id) => {
+    await deleteBlocksSentence(id)
+    setBlocksSentences(prev => {
+      const updated = { ...prev }
+      for (const pid of Object.keys(updated)) {
+        updated[pid] = updated[pid].filter(s => s.id !== id)
+      }
+      return updated
+    })
+  }
+
   if (loading) {
     return (
       <div style={{
@@ -414,35 +556,43 @@ function App() {
     )
   }
 
+  const isBlocks = contentType === 'blocks'
+
   const sidebarCategories =
     contentType === 'images' ? categories :
     contentType === 'questions' ? units :
-    lcDecks
+    contentType === 'luckycard' ? lcDecks :
+    blocksUnits
 
   const sidebarActiveCategory =
     contentType === 'images' ? activeCategory :
     contentType === 'questions' ? activeUnit :
-    activeLcDeck
+    contentType === 'luckycard' ? activeLcDeck :
+    activeBlocksUnit
 
   const sidebarCardCounts =
     contentType === 'images' ? cardCounts :
     contentType === 'questions' ? questionCounts :
-    lcModeCounts
+    contentType === 'luckycard' ? lcModeCounts :
+    blocksUnitCounts
 
   const sidebarOnSelect =
     contentType === 'images' ? handleSelectCategory :
     contentType === 'questions' ? handleSelectUnit :
-    handleSelectLcDeck
+    contentType === 'luckycard' ? handleSelectLcDeck :
+    handleSelectBlocksUnit
 
   const sidebarOnAdd =
     contentType === 'images' ? handleAddCategory :
     contentType === 'questions' ? handleAddUnit :
-    handleAddLcDeck
+    contentType === 'luckycard' ? handleAddLcDeck :
+    handleAddBlocksUnit
 
   const mainCategory =
     contentType === 'images' ? activeCategory :
     contentType === 'questions' ? activeUnit :
-    activeLcDeck
+    contentType === 'luckycard' ? activeLcDeck :
+    null // blocks uses BlocksArea directly
 
   const mainCards =
     contentType === 'images' ? cards :
@@ -452,12 +602,14 @@ function App() {
   const mainOnDeleteCategory =
     contentType === 'images' ? handleDeleteCategory :
     contentType === 'questions' ? handleDeleteUnit :
-    handleDeleteLcDeck
+    contentType === 'luckycard' ? handleDeleteLcDeck :
+    null
 
   const mainOnCategoryRename =
     contentType === 'images' ? handleCategoryRename :
     contentType === 'questions' ? handleRenameUnit :
-    handleRenameLcDeck
+    contentType === 'luckycard' ? handleRenameLcDeck :
+    null
 
   const mainOnAddCard =
     contentType === 'images' ? () => setModalCard(null) :
@@ -496,21 +648,38 @@ function App() {
           onRenameSource={handleRenameSource}
           onDeleteSource={handleDeleteSource}
         />
-        <MainArea
-          category={mainCategory}
-          cards={mainCards}
-          contentType={contentType}
-          onDeleteCategory={mainOnDeleteCategory}
-          onCategoryRename={mainOnCategoryRename}
-          onAddCard={mainOnAddCard}
-          onEditCard={mainOnEditCard}
-          onBulkUpload={handleBulkUpload}
-          onDuplicateCard={contentType === 'questions' ? handleDuplicateQuestion : null}
-          lcModes={lcModes}
-          onLcModesChange={setLcModes}
-          onReorderCards={handleReorderCards}
-          onToggleCardbox={handleToggleCardbox}
-        />
+
+        {isBlocks ? (
+          <BlocksArea
+            unit={activeBlocksUnit}
+            patterns={blocksPatterns}
+            sentences={blocksSentences}
+            onAddPattern={handleAddBlocksPattern}
+            onUpdatePattern={handleUpdateBlocksPattern}
+            onDeletePattern={handleDeleteBlocksPattern}
+            onAddSentence={handleAddBlocksSentence}
+            onUpdateSentence={handleUpdateBlocksSentence}
+            onDeleteSentence={handleDeleteBlocksSentence}
+            onDeleteUnit={handleDeleteBlocksUnit}
+            onRenameUnit={() => {}} // placeholder — add rename modal if needed
+          />
+        ) : (
+          <MainArea
+            category={mainCategory}
+            cards={mainCards}
+            contentType={contentType}
+            onDeleteCategory={mainOnDeleteCategory}
+            onCategoryRename={mainOnCategoryRename}
+            onAddCard={mainOnAddCard}
+            onEditCard={mainOnEditCard}
+            onBulkUpload={handleBulkUpload}
+            onDuplicateCard={contentType === 'questions' ? handleDuplicateQuestion : null}
+            lcModes={lcModes}
+            onLcModesChange={setLcModes}
+            onReorderCards={handleReorderCards}
+            onToggleCardbox={handleToggleCardbox}
+          />
+        )}
       </div>
 
       {modalCard !== undefined && (

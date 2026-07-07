@@ -20,9 +20,29 @@ function Sidebar({ source, categories, activeCategory, cardCounts, contentType, 
 
   const totalCards = categories.reduce((acc, cat) => acc + (cardCounts[cat.id] ?? 0), 0)
 
-  const confirmMessage = contentType === 'questions'
-    ? `Deleting <strong>${categories.length} ${categories.length === 1 ? 'unit' : 'units'}</strong> will permanently remove <strong>${totalCards} ${totalCards === 1 ? 'question' : 'questions'}</strong>. This cannot be undone.`
-    : `Deleting <strong>${categories.length} ${categories.length === 1 ? 'category' : 'categories'}</strong> will permanently remove <strong>${totalCards} ${totalCards === 1 ? 'card' : 'cards'}</strong>. This cannot be undone.`
+  const itemLabel =
+    contentType === 'questions' ? 'unit' :
+    contentType === 'luckycard' ? 'deck' :
+    contentType === 'blocks' ? 'unit' :
+    'category'
+
+  const itemLabelPlural =
+    contentType === 'questions' ? 'units' :
+    contentType === 'luckycard' ? 'decks' :
+    contentType === 'blocks' ? 'units' :
+    'categories'
+
+  const childLabel =
+    contentType === 'questions' ? 'question' :
+    contentType === 'blocks' ? 'pattern' :
+    'card'
+
+  const childLabelPlural =
+    contentType === 'questions' ? 'questions' :
+    contentType === 'blocks' ? 'patterns' :
+    'cards'
+
+  const confirmMessage = `Deleting <strong>${categories.length} ${categories.length === 1 ? itemLabel : itemLabelPlural}</strong> will permanently remove <strong>${totalCards} ${totalCards === 1 ? childLabel : childLabelPlural}</strong>. This cannot be undone.`
 
   return (
     <div className="sidebar">
@@ -55,7 +75,7 @@ function Sidebar({ source, categories, activeCategory, cardCounts, contentType, 
           style={{ width: '100%' }}
         >
           <i className="ti ti-plus" style={{ fontSize: '16px' }} />
-          {contentType === 'questions' ? 'Unit' : contentType === 'luckycard' ? 'Deck' : 'Category'}
+          {itemLabel.charAt(0).toUpperCase() + itemLabel.slice(1)}
         </button>
       </div>
 
@@ -63,7 +83,7 @@ function Sidebar({ source, categories, activeCategory, cardCounts, contentType, 
         {categories.length === 0 ? (
           <div className="sidebar-empty">
             <i className="ti ti-folder-open" />
-            No {contentType === 'questions' ? 'units' : contentType === 'luckycard' ? 'decks' : 'categories'} yet
+            No {itemLabelPlural} yet
           </div>
         ) : (
           categories.map(cat => {
@@ -75,7 +95,11 @@ function Sidebar({ source, categories, activeCategory, cardCounts, contentType, 
                 onClick={() => onSelectCategory(cat)}
               >
                 <div className="cat-dot" />
-                <span className="cat-label">{cat.name}</span>
+                <span className="cat-label">
+                  {contentType === 'blocks' && cat.title
+                    ? <>{cat.name} <span style={{ color: 'var(--color-text-tertiary)', fontWeight: 400 }}>— {cat.title}</span></>
+                    : cat.name}
+                </span>
                 <div className="cat-count">{cardCounts[cat.id] ?? 0}</div>
               </div>
             )

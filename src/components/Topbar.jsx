@@ -5,6 +5,7 @@ const CONTENT_TYPES = [
   { id: 'images', label: 'Images' },
   { id: 'questions', label: 'Questions' },
   { id: 'luckycard', label: 'Lucky Card' },
+  { id: 'blocks', label: 'Blocks' },
 ]
 
 const ALL_GRADES = [
@@ -20,6 +21,11 @@ const LC_GRADES = [
   { id: 'grade4', name: 'Grade 4' },
   { id: 'grade5', name: 'Grade 5' },
   { id: 'grade6', name: 'Grade 6' },
+]
+
+const BLOCKS_GRADES = [
+  { id: '5', name: 'Grade 5' },
+  { id: '6', name: 'Grade 6' },
 ]
 
 function Topbar({ activeSource, onSourceChange, sources, onAddSource, contentType, onContentTypeChange }) {
@@ -41,6 +47,7 @@ function Topbar({ activeSource, onSourceChange, sources, onAddSource, contentTyp
   const getTabs = () => {
     if (contentType === 'questions') return ALL_GRADES
     if (contentType === 'luckycard') return LC_GRADES
+    if (contentType === 'blocks') return BLOCKS_GRADES
     return null
   }
 
