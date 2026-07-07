@@ -61,7 +61,13 @@ function Sidebar({ source, categories, activeCategory, cardCounts, contentType, 
                 />
               </>
             ) : (
-              <span className="sidebar-title-input" style={{ cursor: 'default', borderBottom: 'none' }}>
+              <span style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: '20px',
+                fontWeight: 600,
+                lineHeight: '32px',
+                color: 'var(--color-text-title)',
+              }}>
                 {source?.name || ''}
               </span>
             )}
