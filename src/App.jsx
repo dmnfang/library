@@ -454,6 +454,7 @@ function App() {
   // ── Blocks handlers ──
 
   const handleSelectBlocksUnit = (unit) => {
+    if (activeBlocksUnit?.id === unit.id) return
     setActiveBlocksUnit(unit)
     setBlocksPatterns([])
     setBlocksSentences({})
