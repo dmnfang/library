@@ -49,14 +49,22 @@ function Sidebar({ source, categories, activeCategory, cardCounts, contentType, 
       <div className="sidebar-header">
         <div className="sidebar-title-row">
           <div className="sidebar-title-wrap">
-            <span className="sidebar-title-sizer">{titleValue || ' '}</span>
-            <input
-              className="sidebar-title-input"
-              value={titleValue}
-              onChange={e => setTitleValue(e.target.value)}
-              onBlur={e => onRenameSource(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') e.target.blur() }}
-            />
+            {contentType === 'images' ? (
+              <>
+                <span className="sidebar-title-sizer">{titleValue || ' '}</span>
+                <input
+                  className="sidebar-title-input"
+                  value={titleValue}
+                  onChange={e => setTitleValue(e.target.value)}
+                  onBlur={e => onRenameSource(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') e.target.blur() }}
+                />
+              </>
+            ) : (
+              <span className="sidebar-title-input" style={{ cursor: 'default', borderBottom: 'none' }}>
+                {source?.name || ''}
+              </span>
+            )}
           </div>
           {contentType === 'images' && (
             <button
