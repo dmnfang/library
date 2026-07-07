@@ -1,3 +1,27 @@
+.ba-unit-title-input {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-title);
+  border: none;
+  border-bottom: 1px solid transparent;
+  outline: none;
+  background: transparent;
+  padding: 0;
+  width: 300px;
+  max-width: 100%;
+  cursor: text;
+  transition: border-color var(--motion-micro);
+}
+
+.ba-unit-title-input:hover {
+  border-bottom: 1px dashed var(--color-border-strong);
+}
+
+.ba-unit-title-input:focus {
+  border-bottom: 1px solid var(--color-text-primary);
+}
+
 .ba-content {
   flex: 1;
   overflow-y: auto;

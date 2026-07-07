@@ -251,9 +251,15 @@ export default function BlocksArea({
       {/* Top bar */}
       <div className="main-bar">
         <div className="main-bar-left">
-          <span className="main-bar-title-input" style={{ fontFamily: 'var(--font-display)', fontSize: '20px', fontWeight: 600 }}>
-            {unit.title || unit.name}
-          </span>
+          <div className="main-bar-title-wrap">
+            <span className="main-bar-title-sizer">{unit.title || unit.name || ' '}</span>
+            <input
+              className="main-bar-title-input"
+              defaultValue={unit.title || unit.name}
+              onBlur={e => onRenameUnit(unit.id, e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') e.target.blur() }}
+            />
+          </div>
           <div className="main-bar-dot" />
           <span className="main-bar-count">{patterns.length} patterns · {totalSentences} sentences</span>
         </div>
