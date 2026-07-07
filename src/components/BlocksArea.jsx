@@ -55,23 +55,9 @@ function SentenceRow({ sentence, onEdit, onDelete }) {
 function PatternCard({
   pattern, sentences,
   onEditPattern, onDeletePattern,
-  onAddSentence, onEditSentence, onDeleteSentence,
+  onRequestAddSentence, onRequestEditSentence, onDeleteSentence,
 }) {
   const [expanded, setExpanded] = useState(true)
-  const [addingHere, setAddingHere] = useState(false)
-  const [editingSentence, setEditingSentence] = useState(null)
-
-  const prevChunks = sentences.length > 0 ? sentences[sentences.length - 1].chunks : null
-
-  const handleSaveNew = async (data) => {
-    await onAddSentence(pattern.id, data, sentences.length)
-    setAddingHere(false)
-  }
-
-  const handleSaveEdit = async (data) => {
-    await onEditSentence(editingSentence.id, data)
-    setEditingSentence(null)
-  }
 
   return (
     <div className="ba-pattern-card">
@@ -86,6 +72,13 @@ function PatternCard({
         </div>
         <span className="ba-pattern-count">{sentences.length}</span>
         <div className="ba-pattern-actions">
+          <button
+            className="btn-icon-only btn-md ba-add-btn"
+            onClick={() => onRequestAddSentence(pattern.id)}
+            aria-label="Add sentence"
+          >
+            <i className="ti ti-plus" />
+          </button>
           <button className="btn-icon-only btn-md" onClick={() => onEditPattern(pattern)} aria-label="Edit pattern">
             <i className="ti ti-edit" />
           </button>
@@ -98,49 +91,17 @@ function PatternCard({
       {/* Sentences */}
       {expanded && (
         <div className="ba-sentences">
-          {sentences.length === 0 && !addingHere && (
-            <div className="ba-sentences-empty">No sentences yet</div>
-          )}
-
-          {sentences.map(s => {
-            if (editingSentence?.id === s.id) {
-              return (
-                <div key={s.id} className="ba-sentence-editor-wrap">
-                  <ChunkEditor
-                    initialData={s}
-                    prevChunks={prevChunks}
-                    onSave={handleSaveEdit}
-                    onCancel={() => setEditingSentence(null)}
-                  />
-                </div>
-              )
-            }
-            return (
+          {sentences.length === 0 ? (
+            <div className="ba-sentences-empty">No sentences yet — hit + to add one</div>
+          ) : (
+            sentences.map(s => (
               <SentenceRow
                 key={s.id}
                 sentence={s}
-                onEdit={setEditingSentence}
+                onEdit={() => onRequestEditSentence(pattern.id, s)}
                 onDelete={onDeleteSentence}
               />
-            )
-          })}
-
-          {addingHere ? (
-            <div className="ba-sentence-editor-wrap">
-              <ChunkEditor
-                prevChunks={prevChunks}
-                onSave={handleSaveNew}
-                onCancel={() => setAddingHere(false)}
-              />
-            </div>
-          ) : (
-            <button
-              className="btn btn-ghost btn-md ba-add-sentence-btn"
-              onClick={() => setAddingHere(true)}
-            >
-              <i className="ti ti-plus" style={{ fontSize: '14px' }} />
-              Sentence
-            </button>
+            ))
           )}
         </div>
       )}
@@ -208,6 +169,28 @@ function PatternModal({ pattern, onSave, onClose }) {
   )
 }
 
+// Sentence add/edit modal — wraps ChunkEditor in a wide modal
+function SentenceModal({ initialData, prevChunks, onSave, onClose }) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal modal-wide" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <span className="modal-title">{initialData ? 'Edit sentence' : 'Add sentence'}</span>
+          <button className="btn-icon-only btn-md" onClick={onClose}><i className="ti ti-x" /></button>
+        </div>
+        <div className="modal-body" style={{ paddingTop: 0 }}>
+          <ChunkEditor
+            initialData={initialData}
+            prevChunks={prevChunks}
+            onSave={onSave}
+            onCancel={onClose}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function BlocksArea({
   unit,
   patterns,
@@ -222,6 +205,7 @@ export default function BlocksArea({
   onRenameUnit,
 }) {
   const [patternModal, setPatternModal] = useState(null) // null | 'new' | pattern obj
+  const [sentenceModal, setSentenceModal] = useState(null) // null | { patternId, sentence: null|obj }
 
   if (!unit) {
     return (
@@ -246,8 +230,26 @@ export default function BlocksArea({
     setPatternModal(null)
   }
 
+  const handleSentenceSave = async (data) => {
+    const { patternId, sentence } = sentenceModal
+    if (sentence) {
+      await onUpdateSentence(sentence.id, data)
+    } else {
+      const patternSentences = sentences[patternId] || []
+      await onAddSentence(patternId, data, patternSentences.length)
+    }
+    setSentenceModal(null)
+  }
+
+  const sentenceModalPrevChunks = sentenceModal
+    ? (() => {
+        const patternSentences = sentences[sentenceModal.patternId] || []
+        return patternSentences.length > 0 ? patternSentences[patternSentences.length - 1].chunks : null
+      })()
+    : null
+
   return (
-    <div className="main-area">
+    <div className="main-area ba-scroll-area">
       {/* Top bar */}
       <div className="main-bar">
         <div className="main-bar-left">
@@ -295,8 +297,8 @@ export default function BlocksArea({
               sentences={sentences[pattern.id] || []}
               onEditPattern={p => setPatternModal(p)}
               onDeletePattern={onDeletePattern}
-              onAddSentence={onAddSentence}
-              onEditSentence={onUpdateSentence}
+              onRequestAddSentence={(patternId) => setSentenceModal({ patternId, sentence: null })}
+              onRequestEditSentence={(patternId, sentence) => setSentenceModal({ patternId, sentence })}
               onDeleteSentence={onDeleteSentence}
             />
           ))
@@ -308,6 +310,15 @@ export default function BlocksArea({
           pattern={patternModal === 'new' ? null : patternModal}
           onSave={handlePatternSave}
           onClose={() => setPatternModal(null)}
+        />
+      )}
+
+      {sentenceModal !== null && (
+        <SentenceModal
+          initialData={sentenceModal.sentence}
+          prevChunks={sentenceModalPrevChunks}
+          onSave={handleSentenceSave}
+          onClose={() => setSentenceModal(null)}
         />
       )}
     </div>
