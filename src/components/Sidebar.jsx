@@ -110,7 +110,9 @@ function Sidebar({ source, categories, activeCategory, cardCounts, contentType, 
               >
                 <div className="cat-dot" />
                 <span className="cat-label">
-                  {contentType === 'blocks' ? (cat.title || cat.name) : cat.name}
+                  {contentType === 'blocks'
+                    ? <>{cat.name} <span style={{ color: 'var(--color-text-tertiary)', fontWeight: 400 }}>— {cat.title}</span></>
+                    : cat.name}
                 </span>
                 <div className="cat-count">{cardCounts[cat.id] ?? 0}</div>
               </div>

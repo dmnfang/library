@@ -253,13 +253,24 @@ export default function BlocksArea({
       {/* Top bar */}
       <div className="main-bar">
         <div className="main-bar-left">
-          <input
-            key={unit.id}
-            className="ba-unit-title-input"
-            defaultValue={unit.title || unit.name}
-            onBlur={e => onRenameUnit(unit.id, e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') e.target.blur() }}
-          />
+          <div className="ba-unit-heading">
+            <input
+              key={unit.id + '-name'}
+              className="ba-unit-eyebrow-input"
+              defaultValue={unit.name}
+              onBlur={e => onRenameUnit(unit.id, { name: e.target.value })}
+              onKeyDown={e => { if (e.key === 'Enter') e.target.blur() }}
+              placeholder="Unit 1"
+            />
+            <input
+              key={unit.id + '-title'}
+              className="ba-unit-title-input"
+              defaultValue={unit.title}
+              onBlur={e => onRenameUnit(unit.id, { title: e.target.value })}
+              onKeyDown={e => { if (e.key === 'Enter') e.target.blur() }}
+              placeholder="Unit title"
+            />
+          </div>
           <div className="main-bar-dot" />
           <span className="main-bar-count">{patterns.length} patterns · {totalSentences} sentences</span>
         </div>

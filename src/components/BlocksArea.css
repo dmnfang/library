@@ -11,6 +11,39 @@
   overflow-y: auto;
 }
 
+.ba-unit-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.ba-unit-eyebrow-input {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-tertiary);
+  border: none;
+  border-bottom: 1px solid transparent;
+  outline: none;
+  background: transparent;
+  padding: 0;
+  width: auto;
+  min-width: 60px;
+  max-width: 200px;
+  cursor: text;
+  transition: border-color var(--motion-micro);
+}
+
+.ba-unit-eyebrow-input:hover {
+  border-bottom: 1px dashed var(--color-border-strong);
+}
+
+.ba-unit-eyebrow-input:focus {
+  border-bottom: 1px solid var(--color-text-primary);
+}
+
 .ba-unit-title-input {
   font-family: var(--font-display);
   font-size: 20px;

@@ -461,7 +461,7 @@ function App() {
 
   const handleAddBlocksUnit = async () => {
     const sort_order = blocksUnits.length
-    const newUnit = await addBlocksUnit(activeSource.id, 'New Unit', 'New Unit', sort_order)
+    const newUnit = await addBlocksUnit(activeSource.id, `Unit ${blocksUnits.length + 1}`, 'New Unit', sort_order)
     setBlocksUnits(prev => [...prev, newUnit])
     setBlocksUnitCounts(prev => ({ ...prev, [newUnit.id]: 0 }))
     setActiveBlocksUnit(newUnit)
@@ -482,13 +482,13 @@ function App() {
     setBlocksSentences({})
   }
 
-  const handleRenameBlocksUnit = async (id, newTitle) => {
-    await renameBlocksUnit(id, newTitle, newTitle)
+  const handleRenameBlocksUnit = async (id, fields) => {
+    await renameBlocksUnit(id, fields)
     setBlocksUnits(prev => prev.map(u =>
-      u.id === id ? { ...u, title: newTitle } : u
+      u.id === id ? { ...u, ...fields } : u
     ))
     setActiveBlocksUnit(prev =>
-      prev?.id === id ? { ...prev, title: newTitle } : prev
+      prev?.id === id ? { ...prev, ...fields } : prev
     )
   }
 

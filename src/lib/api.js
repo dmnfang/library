@@ -446,7 +446,6 @@ export async function setCategoryCardboxEnabled(id, enabled) {
 }
 
 // ── BLOCKS UNITS ──
-// Append these to lib/api.js
 
 export async function fetchBlocksUnits(grade) {
   const { data, error } = await supabase
@@ -468,10 +467,10 @@ export async function addBlocksUnit(grade, name, title, sort_order) {
   return data
 }
 
-export async function renameBlocksUnit(id, name, title) {
+export async function renameBlocksUnit(id, fields) {
   const { error } = await supabase
     .from('blocks_units')
-    .update({ name, title })
+    .update(fields)
     .eq('id', id)
   if (error) throw error
 }
