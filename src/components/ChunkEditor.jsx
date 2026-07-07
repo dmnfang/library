@@ -42,7 +42,6 @@ export default function ChunkEditor({ onSave, onCancel, prevChunks, initialData 
   const [jp, setJp] = useState(initialData?.jp || '')
   const [tier, setTier] = useState(initialData?.tier || 'textbook')
   const [activeChunk, setActiveChunk] = useState(null) // index of chunk showing role palette
-  const [mergeAt, setMergeAt] = useState(null) // index of gap showing merge button (merges i and i+1)
   const [saving, setSaving] = useState(false)
   const inputRef = useRef(null)
 
@@ -52,7 +51,6 @@ export default function ChunkEditor({ onSave, onCancel, prevChunks, initialData 
     const filled = prevChunks ? prefillRoles(newChunks, prevChunks) : newChunks
     setChunks(filled)
     setActiveChunk(null)
-    setMergeAt(null)
   }
 
   const handleAssignRole = (chunkIdx, roleKey) => {
@@ -69,7 +67,6 @@ export default function ChunkEditor({ onSave, onCancel, prevChunks, initialData 
       next.splice(gapIdx, 2, [merged, role])
       return next
     })
-    setMergeAt(null)
   }
 
   const handleSplit = (chunkIdx) => {
@@ -134,18 +131,14 @@ export default function ChunkEditor({ onSave, onCancel, prevChunks, initialData 
 
               return (
                 <div key={i} className="ce-chunk-wrap">
-                  {/* Merge gap — shown between chunks */}
+                  {/* Merge gap — click merges immediately */}
                   {i > 0 && (
                     <button
-                      className={`ce-gap ${mergeAt === i - 1 ? 'active' : ''}`}
-                      onClick={() => setMergeAt(prev => prev === i - 1 ? null : i - 1)}
-                      title="Merge with previous"
+                      className="ce-gap"
+                      onClick={() => handleMerge(i - 1)}
+                      title="Merge with previous block"
                     >
-                      {mergeAt === i - 1 && (
-                        <span className="ce-merge-btn" onClick={e => { e.stopPropagation(); handleMerge(i - 1) }}>
-                          Merge
-                        </span>
-                      )}
+                      <i className="ti ti-arrows-join-2" />
                     </button>
                   )}
 
@@ -161,7 +154,6 @@ export default function ChunkEditor({ onSave, onCancel, prevChunks, initialData 
                       }}
                       onClick={() => {
                         setActiveChunk(isActive ? null : i)
-                        setMergeAt(null)
                       }}
                     >
                       {chunk[0]}

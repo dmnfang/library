@@ -1,4 +1,3 @@
-
 .chunk-editor {
   display: flex;
   flex-direction: column;
@@ -118,9 +117,9 @@
   color: var(--color-text-primary);
 }
 
-/* Gap between chunks — clickable merge zone */
+/* Gap between chunks — clickable merge zone, click merges immediately */
 .ce-gap {
-  width: 12px;
+  width: 20px;
   align-self: stretch;
   background: none;
   border: none;
@@ -131,32 +130,14 @@
   position: relative;
   flex-shrink: 0;
   border-radius: 4px;
-  transition: background var(--motion-micro);
+  color: transparent;
+  font-size: 13px;
+  transition: background var(--motion-micro), color var(--motion-micro);
 }
 
 .ce-gap:hover {
   background: var(--color-border-default);
-}
-
-.ce-gap.active {
-  background: var(--color-border-strong);
-}
-
-/* Merge button that appears in the gap */
-.ce-merge-btn {
-  position: absolute;
-  top: -28px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--color-text-primary);
-  color: var(--color-bg-surface);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 6px;
-  white-space: nowrap;
-  z-index: 10;
-  cursor: pointer;
+  color: var(--color-text-secondary);
 }
 
 /* Role palette popover */
