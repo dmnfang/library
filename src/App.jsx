@@ -482,6 +482,16 @@ function App() {
     setBlocksSentences({})
   }
 
+  const handleRenameBlocksUnit = async (id, newTitle) => {
+    await renameBlocksUnit(id, newTitle, newTitle)
+    setBlocksUnits(prev => prev.map(u =>
+      u.id === id ? { ...u, title: newTitle } : u
+    ))
+    setActiveBlocksUnit(prev =>
+      prev?.id === id ? { ...prev, title: newTitle } : prev
+    )
+  }
+
   const handleAddBlocksPattern = async (unitId, fields, sort_order) => {
     const newPattern = await addBlocksPattern(unitId, fields.frame, fields.gloss, sort_order)
     setBlocksPatterns(prev => [...prev, newPattern])
@@ -661,7 +671,7 @@ function App() {
             onUpdateSentence={handleUpdateBlocksSentence}
             onDeleteSentence={handleDeleteBlocksSentence}
             onDeleteUnit={handleDeleteBlocksUnit}
-            onRenameUnit={() => {}} // placeholder — add rename modal if needed
+            onRenameUnit={handleRenameBlocksUnit}
           />
         ) : (
           <MainArea

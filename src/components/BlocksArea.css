@@ -8,8 +8,9 @@
   outline: none;
   background: transparent;
   padding: 0;
-  width: 300px;
-  max-width: 100%;
+  width: auto;
+  min-width: 120px;
+  max-width: 500px;
   cursor: text;
   transition: border-color var(--motion-micro);
 }
