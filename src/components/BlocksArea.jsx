@@ -271,10 +271,9 @@ export default function BlocksArea({
               placeholder="Unit title"
             />
           </div>
-          <div className="main-bar-dot" />
-          <span className="main-bar-count">{patterns.length} patterns · {totalSentences} sentences</span>
         </div>
         <div className="main-bar-right">
+          <span className="ba-meta-count">{patterns.length} patterns · {totalSentences} sentences</span>
           <button
             className="btn-icon-only btn-md danger"
             onClick={() => onDeleteUnit(unit.id)}

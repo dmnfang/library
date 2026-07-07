@@ -11,6 +11,15 @@
   overflow-y: auto;
 }
 
+.ba-meta-count {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  margin-right: 4px;
+}
+
 .ba-unit-heading {
   display: flex;
   flex-direction: column;
