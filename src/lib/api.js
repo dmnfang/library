@@ -558,3 +558,89 @@ export async function deleteBlocksSentence(id) {
     .eq('id', id)
   if (error) throw error
 }
+
+// ── BLANKS UNITS ──
+// Append these to lib/api.js
+
+export async function fetchBlanksUnits(grade) {
+  const { data, error } = await supabase
+    .from('blanks_units')
+    .select('*')
+    .eq('grade', grade)
+    .order('unit_number')
+  if (error) throw error
+  return data
+}
+
+export async function addBlanksUnit(grade, unit_number, title) {
+  const { data, error } = await supabase
+    .from('blanks_units')
+    .insert({ grade, unit_number, title })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function renameBlanksUnit(id, fields) {
+  const { error } = await supabase
+    .from('blanks_units')
+    .update(fields)
+    .eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteBlanksUnit(id) {
+  const { error } = await supabase
+    .from('blanks_units')
+    .delete()
+    .eq('id', id)
+  if (error) throw error
+}
+
+// ── BLANKS SENTENCES ──
+
+export async function fetchBlanksSentences(unitId) {
+  const { data, error } = await supabase
+    .from('blanks_sentences')
+    .select('*')
+    .eq('unit_id', unitId)
+    .order('position')
+  if (error) throw error
+  return data
+}
+
+export async function addBlanksSentence(unitId, pattern, chunks, position) {
+  const { data, error } = await supabase
+    .from('blanks_sentences')
+    .insert({ unit_id: unitId, pattern, chunks, position })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updateBlanksSentence(id, fields) {
+  const { error } = await supabase
+    .from('blanks_sentences')
+    .update(fields)
+    .eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteBlanksSentence(id) {
+  const { error } = await supabase
+    .from('blanks_sentences')
+    .delete()
+    .eq('id', id)
+  if (error) throw error
+}
+
+export async function bulkRenameBlanksPattern(unitId, oldPattern, newPattern) {
+  const { error } = await supabase
+    .from('blanks_sentences')
+    .update({ pattern: newPattern })
+    .eq('unit_id', unitId)
+    .eq('pattern', oldPattern)
+  if (error) throw error
+}

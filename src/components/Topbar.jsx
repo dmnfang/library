@@ -6,6 +6,7 @@ const CONTENT_TYPES = [
   { id: 'questions', label: 'Questions' },
   { id: 'luckycard', label: 'Lucky Card' },
   { id: 'blocks', label: 'Blocks' },
+  { id: 'blanks', label: 'Blanks' },
 ]
 
 const ALL_GRADES = [
@@ -28,6 +29,12 @@ const BLOCKS_GRADES = [
   { id: '6', name: 'Grade 6' },
 ]
 
+// Blanks' grade column is integer, so ids are numbers (not strings like Blocks)
+const BLANKS_GRADES = [
+  { id: 5, name: 'Grade 5' },
+  { id: 6, name: 'Grade 6' },
+]
+
 function Topbar({ activeSource, onSourceChange, sources, onAddSource, contentType, onContentTypeChange }) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef(null)
@@ -48,6 +55,7 @@ function Topbar({ activeSource, onSourceChange, sources, onAddSource, contentTyp
     if (contentType === 'questions') return ALL_GRADES
     if (contentType === 'luckycard') return LC_GRADES
     if (contentType === 'blocks') return BLOCKS_GRADES
+    if (contentType === 'blanks') return BLANKS_GRADES
     return null
   }
 

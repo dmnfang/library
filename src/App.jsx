@@ -3,6 +3,7 @@ import Topbar from './components/Topbar'
 import Sidebar from './components/Sidebar'
 import MainArea from './components/MainArea'
 import BlocksArea from './components/BlocksArea'
+import BlanksArea from './components/BlanksArea'
 import CardModal from './components/CardModal'
 import ConfirmModal from './components/ConfirmModal'
 import QuestionModal from './components/QuestionModal'
@@ -22,6 +23,9 @@ import {
   fetchBlocksUnits, addBlocksUnit, renameBlocksUnit, deleteBlocksUnit,
   fetchBlocksPatterns, addBlocksPattern, updateBlocksPattern, deleteBlocksPattern,
   fetchBlocksSentences, addBlocksSentence, updateBlocksSentence, deleteBlocksSentence,
+  fetchBlanksUnits, addBlanksUnit, renameBlanksUnit, deleteBlanksUnit,
+  fetchBlanksSentences, addBlanksSentence, updateBlanksSentence, deleteBlanksSentence,
+  bulkRenameBlanksPattern,
 } from './lib/api'
 
 function App() {
@@ -54,6 +58,12 @@ function App() {
   const [blocksPatterns, setBlocksPatterns] = useState([]) // pattern[]
   const [blocksSentences, setBlocksSentences] = useState({}) // { [patternId]: sentence[] }
   const [blocksUnitCounts, setBlocksUnitCounts] = useState({}) // { [unitId]: patternCount }
+
+  // ── Blanks state ──
+  const [blanksUnits, setBlanksUnits] = useState([])
+  const [activeBlanksUnit, setActiveBlanksUnit] = useState(null)
+  const [blanksSentences, setBlanksSentences] = useState([]) // flat array for active unit
+  const [blanksUnitCounts, setBlanksUnitCounts] = useState({}) // { [unitId]: sentenceCount }
 
   useEffect(() => {
     fetchSources().then(data => {
@@ -170,17 +180,44 @@ function App() {
     })
   }, [activeBlocksUnit?.id])
 
+  // Fetch blanks units when grade changes
+  useEffect(() => {
+    if (contentType !== 'blanks' || !activeSource) return
+    setBlanksUnits([])
+    setActiveBlanksUnit(null)
+    setBlanksSentences([])
+    setBlanksUnitCounts({})
+    fetchBlanksUnits(activeSource.id).then(async (unitList) => {
+      setBlanksUnits(unitList)
+      const counts = {}
+      await Promise.all(unitList.map(async (u) => {
+        const sents = await fetchBlanksSentences(u.id)
+        counts[u.id] = sents.length
+      }))
+      setBlanksUnitCounts(counts)
+    })
+  }, [activeSource?.id, contentType])
+
+  // Fetch sentences when blanks unit changes
+  useEffect(() => {
+    if (!activeBlanksUnit) return
+    setBlanksSentences([])
+    fetchBlanksSentences(activeBlanksUnit.id).then(setBlanksSentences)
+  }, [activeBlanksUnit?.id])
+
   const handleSourceChange = (source) => {
     setActiveSource(source)
     setActiveCategory(null)
     setActiveUnit(null)
     setActiveLcDeck(null)
     setActiveBlocksUnit(null)
+    setActiveBlanksUnit(null)
     setCards([])
     setQuestions([])
     setLcModes([])
     setBlocksPatterns([])
     setBlocksSentences({})
+    setBlanksSentences([])
     if (contentType === 'luckycard') setLcFetchKey(k => k + 1)
   }
 
@@ -190,11 +227,13 @@ function App() {
     setActiveUnit(null)
     setActiveLcDeck(null)
     setActiveBlocksUnit(null)
+    setActiveBlanksUnit(null)
     setCards([])
     setQuestions([])
     setLcModes([])
     setBlocksPatterns([])
     setBlocksSentences({})
+    setBlanksSentences([])
     if (type === 'images') {
       setActiveSource(sources[0] || null)
     } else if (type === 'questions') {
@@ -204,6 +243,8 @@ function App() {
       setLcFetchKey(k => k + 1)
     } else if (type === 'blocks') {
       setActiveSource({ id: '5', name: 'Grade 5' })
+    } else if (type === 'blanks') {
+      setActiveSource({ id: 5, name: 'Grade 5' })
     }
   }
 
@@ -551,6 +592,78 @@ function App() {
     })
   }
 
+  // ── Blanks handlers ──
+
+  const handleSelectBlanksUnit = (unit) => {
+    if (activeBlanksUnit?.id === unit.id) return
+    setActiveBlanksUnit(unit)
+    setBlanksSentences([])
+  }
+
+  const handleAddBlanksUnit = async () => {
+    const unit_number = blanksUnits.length + 1
+    const newUnit = await addBlanksUnit(activeSource.id, unit_number, 'New Unit')
+    setBlanksUnits(prev => [...prev, newUnit])
+    setBlanksUnitCounts(prev => ({ ...prev, [newUnit.id]: 0 }))
+    setActiveBlanksUnit(newUnit)
+    setBlanksSentences([])
+  }
+
+  const handleDeleteBlanksUnit = async (id) => {
+    await deleteBlanksUnit(id)
+    setBlanksUnits(prev => prev.filter(u => u.id !== id))
+    setBlanksUnitCounts(prev => {
+      const updated = { ...prev }
+      delete updated[id]
+      return updated
+    })
+    setActiveBlanksUnit(null)
+    setBlanksSentences([])
+  }
+
+  const handleRenameBlanksUnit = async (id, fields) => {
+    await renameBlanksUnit(id, fields)
+    setBlanksUnits(prev => prev.map(u =>
+      u.id === id ? { ...u, ...fields } : u
+    ))
+    setActiveBlanksUnit(prev =>
+      prev?.id === id ? { ...prev, ...fields } : prev
+    )
+  }
+
+  const handleAddBlanksSentence = async ({ pattern, chunks }, position) => {
+    const newSentence = await addBlanksSentence(activeBlanksUnit.id, pattern, chunks, position)
+    setBlanksSentences(prev => [...prev, newSentence])
+    setBlanksUnitCounts(prev => ({
+      ...prev,
+      [activeBlanksUnit.id]: (prev[activeBlanksUnit.id] ?? 0) + 1
+    }))
+  }
+
+  const handleUpdateBlanksSentence = async (id, { pattern, chunks }) => {
+    await updateBlanksSentence(id, { pattern, chunks })
+    setBlanksSentences(prev => prev.map(s => s.id === id ? { ...s, pattern, chunks } : s))
+  }
+
+  const handleDeleteBlanksSentence = async (id) => {
+    await deleteBlanksSentence(id)
+    setBlanksSentences(prev => prev.filter(s => s.id !== id))
+    if (activeBlanksUnit) {
+      setBlanksUnitCounts(prev => ({
+        ...prev,
+        [activeBlanksUnit.id]: Math.max(0, (prev[activeBlanksUnit.id] ?? 1) - 1)
+      }))
+    }
+  }
+
+  const handleBulkRenameBlanksPattern = async (oldPattern, newPattern) => {
+    if (!activeBlanksUnit) return
+    await bulkRenameBlanksPattern(activeBlanksUnit.id, oldPattern, newPattern)
+    setBlanksSentences(prev => prev.map(s =>
+      s.pattern === oldPattern ? { ...s, pattern: newPattern } : s
+    ))
+  }
+
   if (loading) {
     return (
       <div style={{
@@ -568,36 +681,42 @@ function App() {
   }
 
   const isBlocks = contentType === 'blocks'
+  const isBlanks = contentType === 'blanks'
 
   const sidebarCategories =
     contentType === 'images' ? categories :
     contentType === 'questions' ? units :
     contentType === 'luckycard' ? lcDecks :
-    blocksUnits
+    contentType === 'blocks' ? blocksUnits :
+    blanksUnits
 
   const sidebarActiveCategory =
     contentType === 'images' ? activeCategory :
     contentType === 'questions' ? activeUnit :
     contentType === 'luckycard' ? activeLcDeck :
-    activeBlocksUnit
+    contentType === 'blocks' ? activeBlocksUnit :
+    activeBlanksUnit
 
   const sidebarCardCounts =
     contentType === 'images' ? cardCounts :
     contentType === 'questions' ? questionCounts :
     contentType === 'luckycard' ? lcModeCounts :
-    blocksUnitCounts
+    contentType === 'blocks' ? blocksUnitCounts :
+    blanksUnitCounts
 
   const sidebarOnSelect =
     contentType === 'images' ? handleSelectCategory :
     contentType === 'questions' ? handleSelectUnit :
     contentType === 'luckycard' ? handleSelectLcDeck :
-    handleSelectBlocksUnit
+    contentType === 'blocks' ? handleSelectBlocksUnit :
+    handleSelectBlanksUnit
 
   const sidebarOnAdd =
     contentType === 'images' ? handleAddCategory :
     contentType === 'questions' ? handleAddUnit :
     contentType === 'luckycard' ? handleAddLcDeck :
-    handleAddBlocksUnit
+    contentType === 'blocks' ? handleAddBlocksUnit :
+    handleAddBlanksUnit
 
   const mainCategory =
     contentType === 'images' ? activeCategory :
@@ -673,6 +792,17 @@ function App() {
             onDeleteSentence={handleDeleteBlocksSentence}
             onDeleteUnit={handleDeleteBlocksUnit}
             onRenameUnit={handleRenameBlocksUnit}
+          />
+        ) : isBlanks ? (
+          <BlanksArea
+            unit={activeBlanksUnit}
+            sentences={blanksSentences}
+            onAddSentence={handleAddBlanksSentence}
+            onUpdateSentence={handleUpdateBlanksSentence}
+            onDeleteSentence={handleDeleteBlanksSentence}
+            onBulkRenamePattern={handleBulkRenameBlanksPattern}
+            onDeleteUnit={handleDeleteBlanksUnit}
+            onRenameUnit={handleRenameBlanksUnit}
           />
         ) : (
           <MainArea
