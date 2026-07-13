@@ -92,6 +92,17 @@ function ImagePicker({ onPick, onClose }) {
   )
 }
 
+// Image picker as its own centered overlay — avoids clipping inside the parent modal
+function ImagePickerOverlay({ onPick, onClose }) {
+  return (
+    <div className="bce-picker-overlay" onClick={onClose}>
+      <div className="bce-picker-card" onClick={e => e.stopPropagation()}>
+        <ImagePicker onPick={onPick} onClose={onClose} />
+      </div>
+    </div>
+  )
+}
+
 export default function BlanksChunkEditor({ onSave, onCancel, initialData }) {
   const isEditing = !!initialData
 
@@ -200,11 +211,11 @@ export default function BlanksChunkEditor({ onSave, onCancel, initialData }) {
                   {chunk.blankable && (
                     <div className="bce-clue-row">
                       {chunk.image_url ? (
-                        <div className="bce-clue-thumb">
+                        <div className="bce-clue-thumb" onClick={() => setPickerForChunk(i)}>
                           <img src={chunk.image_url} alt={chunk.text} />
                           <button
                             className="bce-clue-remove"
-                            onClick={() => handleRemoveImage(i)}
+                            onClick={e => { e.stopPropagation(); handleRemoveImage(i) }}
                             aria-label="Remove image clue"
                           >
                             <i className="ti ti-x" />
@@ -223,15 +234,6 @@ export default function BlanksChunkEditor({ onSave, onCancel, initialData }) {
                     </div>
                   )}
                 </div>
-
-                {pickerForChunk === i && (
-                  <div className="bce-picker-popover">
-                    <ImagePicker
-                      onPick={(url) => handlePickImage(i, url)}
-                      onClose={() => setPickerForChunk(null)}
-                    />
-                  </div>
-                )}
               </div>
             ))}
           </div>
@@ -247,6 +249,13 @@ export default function BlanksChunkEditor({ onSave, onCancel, initialData }) {
           placeholder="e.g. 私の宝物はこのボールです"
         />
       </div>
+
+      {pickerForChunk !== null && (
+        <ImagePickerOverlay
+          onPick={(url) => handlePickImage(pickerForChunk, url)}
+          onClose={() => setPickerForChunk(null)}
+        />
+      )}
 
       <div className="bce-footer">
         <button className="btn btn-ghost btn-md" onClick={onCancel}>Cancel</button>
