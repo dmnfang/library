@@ -24,8 +24,8 @@ import {
   fetchBlocksPatterns, addBlocksPattern, updateBlocksPattern, deleteBlocksPattern,
   fetchBlocksSentences, addBlocksSentence, updateBlocksSentence, deleteBlocksSentence,
   fetchBlanksUnits, addBlanksUnit, renameBlanksUnit, deleteBlanksUnit,
+  fetchBlanksPatterns, addBlanksPattern, updateBlanksPattern, deleteBlanksPattern,
   fetchBlanksSentences, addBlanksSentence, updateBlanksSentence, deleteBlanksSentence,
-  bulkRenameBlanksPattern,
 } from './lib/api'
 
 function App() {
@@ -59,11 +59,12 @@ function App() {
   const [blocksSentences, setBlocksSentences] = useState({}) // { [patternId]: sentence[] }
   const [blocksUnitCounts, setBlocksUnitCounts] = useState({}) // { [unitId]: patternCount }
 
-  // ── Blanks state ──
+  // ── Blanks state (mirrors Blocks) ──
   const [blanksUnits, setBlanksUnits] = useState([])
   const [activeBlanksUnit, setActiveBlanksUnit] = useState(null)
-  const [blanksSentences, setBlanksSentences] = useState([]) // flat array for active unit
-  const [blanksUnitCounts, setBlanksUnitCounts] = useState({}) // { [unitId]: sentenceCount }
+  const [blanksPatterns, setBlanksPatterns] = useState([]) // pattern[]
+  const [blanksSentences, setBlanksSentences] = useState({}) // { [patternId]: sentence[] }
+  const [blanksUnitCounts, setBlanksUnitCounts] = useState({}) // { [unitId]: patternCount }
 
   useEffect(() => {
     fetchSources().then(data => {
@@ -185,24 +186,34 @@ function App() {
     if (contentType !== 'blanks' || !activeSource) return
     setBlanksUnits([])
     setActiveBlanksUnit(null)
-    setBlanksSentences([])
+    setBlanksPatterns([])
+    setBlanksSentences({})
     setBlanksUnitCounts({})
     fetchBlanksUnits(activeSource.id).then(async (unitList) => {
       setBlanksUnits(unitList)
       const counts = {}
       await Promise.all(unitList.map(async (u) => {
-        const sents = await fetchBlanksSentences(u.id)
-        counts[u.id] = sents.length
+        const patterns = await fetchBlanksPatterns(u.id)
+        counts[u.id] = patterns.length
       }))
       setBlanksUnitCounts(counts)
     })
   }, [activeSource?.id, contentType])
 
-  // Fetch sentences when blanks unit changes
+  // Fetch patterns + sentences when blanks unit changes
   useEffect(() => {
     if (!activeBlanksUnit) return
-    setBlanksSentences([])
-    fetchBlanksSentences(activeBlanksUnit.id).then(setBlanksSentences)
+    setBlanksPatterns([])
+    setBlanksSentences({})
+    fetchBlanksPatterns(activeBlanksUnit.id).then(async (patterns) => {
+      setBlanksPatterns(patterns)
+      const sentMap = {}
+      await Promise.all(patterns.map(async (p) => {
+        const sents = await fetchBlanksSentences(p.id)
+        sentMap[p.id] = sents
+      }))
+      setBlanksSentences(sentMap)
+    })
   }, [activeBlanksUnit?.id])
 
   const handleSourceChange = (source) => {
@@ -217,7 +228,8 @@ function App() {
     setLcModes([])
     setBlocksPatterns([])
     setBlocksSentences({})
-    setBlanksSentences([])
+    setBlanksPatterns([])
+    setBlanksSentences({})
     if (contentType === 'luckycard') setLcFetchKey(k => k + 1)
   }
 
@@ -233,7 +245,8 @@ function App() {
     setLcModes([])
     setBlocksPatterns([])
     setBlocksSentences({})
-    setBlanksSentences([])
+    setBlanksPatterns([])
+    setBlanksSentences({})
     if (type === 'images') {
       setActiveSource(sources[0] || null)
     } else if (type === 'questions') {
@@ -592,12 +605,13 @@ function App() {
     })
   }
 
-  // ── Blanks handlers ──
+  // ── Blanks handlers (mirrors Blocks) ──
 
   const handleSelectBlanksUnit = (unit) => {
     if (activeBlanksUnit?.id === unit.id) return
     setActiveBlanksUnit(unit)
-    setBlanksSentences([])
+    setBlanksPatterns([])
+    setBlanksSentences({})
   }
 
   const handleAddBlanksUnit = async () => {
@@ -606,7 +620,8 @@ function App() {
     setBlanksUnits(prev => [...prev, newUnit])
     setBlanksUnitCounts(prev => ({ ...prev, [newUnit.id]: 0 }))
     setActiveBlanksUnit(newUnit)
-    setBlanksSentences([])
+    setBlanksPatterns([])
+    setBlanksSentences({})
   }
 
   const handleDeleteBlanksUnit = async (id) => {
@@ -618,7 +633,8 @@ function App() {
       return updated
     })
     setActiveBlanksUnit(null)
-    setBlanksSentences([])
+    setBlanksPatterns([])
+    setBlanksSentences({})
   }
 
   const handleRenameBlanksUnit = async (id, fields) => {
@@ -631,23 +647,26 @@ function App() {
     )
   }
 
-  const handleAddBlanksSentence = async ({ pattern, chunks }, position) => {
-    const newSentence = await addBlanksSentence(activeBlanksUnit.id, pattern, chunks, position)
-    setBlanksSentences(prev => [...prev, newSentence])
-    setBlanksUnitCounts(prev => ({
-      ...prev,
-      [activeBlanksUnit.id]: (prev[activeBlanksUnit.id] ?? 0) + 1
-    }))
+  const handleAddBlanksPattern = async (unitId, fields, sort_order) => {
+    const newPattern = await addBlanksPattern(unitId, fields.frame, fields.gloss, sort_order)
+    setBlanksPatterns(prev => [...prev, newPattern])
+    setBlanksSentences(prev => ({ ...prev, [newPattern.id]: [] }))
+    setBlanksUnitCounts(prev => ({ ...prev, [unitId]: (prev[unitId] ?? 0) + 1 }))
   }
 
-  const handleUpdateBlanksSentence = async (id, { pattern, chunks }) => {
-    await updateBlanksSentence(id, { pattern, chunks })
-    setBlanksSentences(prev => prev.map(s => s.id === id ? { ...s, pattern, chunks } : s))
+  const handleUpdateBlanksPattern = async (id, fields) => {
+    await updateBlanksPattern(id, fields)
+    setBlanksPatterns(prev => prev.map(p => p.id === id ? { ...p, ...fields } : p))
   }
 
-  const handleDeleteBlanksSentence = async (id) => {
-    await deleteBlanksSentence(id)
-    setBlanksSentences(prev => prev.filter(s => s.id !== id))
+  const handleDeleteBlanksPattern = async (id) => {
+    await deleteBlanksPattern(id)
+    setBlanksPatterns(prev => prev.filter(p => p.id !== id))
+    setBlanksSentences(prev => {
+      const updated = { ...prev }
+      delete updated[id]
+      return updated
+    })
     if (activeBlanksUnit) {
       setBlanksUnitCounts(prev => ({
         ...prev,
@@ -656,12 +675,34 @@ function App() {
     }
   }
 
-  const handleBulkRenameBlanksPattern = async (oldPattern, newPattern) => {
-    if (!activeBlanksUnit) return
-    await bulkRenameBlanksPattern(activeBlanksUnit.id, oldPattern, newPattern)
-    setBlanksSentences(prev => prev.map(s =>
-      s.pattern === oldPattern ? { ...s, pattern: newPattern } : s
-    ))
+  const handleAddBlanksSentence = async (patternId, { jp, chunks }, position) => {
+    const newSentence = await addBlanksSentence(patternId, jp, chunks, position)
+    setBlanksSentences(prev => ({
+      ...prev,
+      [patternId]: [...(prev[patternId] || []), newSentence]
+    }))
+  }
+
+  const handleUpdateBlanksSentence = async (id, { jp, chunks }) => {
+    await updateBlanksSentence(id, { jp, chunks })
+    setBlanksSentences(prev => {
+      const updated = { ...prev }
+      for (const pid of Object.keys(updated)) {
+        updated[pid] = updated[pid].map(s => s.id === id ? { ...s, jp, chunks } : s)
+      }
+      return updated
+    })
+  }
+
+  const handleDeleteBlanksSentence = async (id) => {
+    await deleteBlanksSentence(id)
+    setBlanksSentences(prev => {
+      const updated = { ...prev }
+      for (const pid of Object.keys(updated)) {
+        updated[pid] = updated[pid].filter(s => s.id !== id)
+      }
+      return updated
+    })
   }
 
   if (loading) {
@@ -722,7 +763,7 @@ function App() {
     contentType === 'images' ? activeCategory :
     contentType === 'questions' ? activeUnit :
     contentType === 'luckycard' ? activeLcDeck :
-    null // blocks uses BlocksArea directly
+    null // blocks/blanks use their own Area components
 
   const mainCards =
     contentType === 'images' ? cards :
@@ -796,11 +837,14 @@ function App() {
         ) : isBlanks ? (
           <BlanksArea
             unit={activeBlanksUnit}
+            patterns={blanksPatterns}
             sentences={blanksSentences}
+            onAddPattern={handleAddBlanksPattern}
+            onUpdatePattern={handleUpdateBlanksPattern}
+            onDeletePattern={handleDeleteBlanksPattern}
             onAddSentence={handleAddBlanksSentence}
             onUpdateSentence={handleUpdateBlanksSentence}
             onDeleteSentence={handleDeleteBlanksSentence}
-            onBulkRenamePattern={handleBulkRenameBlanksPattern}
             onDeleteUnit={handleDeleteBlanksUnit}
             onRenameUnit={handleRenameBlanksUnit}
           />
