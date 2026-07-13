@@ -46,12 +46,6 @@
   flex: 1;
 }
 
-.bce-row-2col {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
 /* Chunk builder row */
 .bce-chunks-row {
   display: flex;
@@ -104,7 +98,7 @@
   box-shadow: none !important;
 }
 
-/* Blankable state — dashed indigo (Blanks accent tie-in) */
+/* Blankable state — dashed indigo (Blanks accent) */
 .bce-block.blankable {
   background: #EDF0FB;
   border: 2px dashed #4A5FC1;

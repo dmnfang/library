@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { fetchSources, fetchCategories, fetchCards } from '../lib/api'
 import './BlanksChunkEditor.css'
 
-// Splits a raw English string into chunks: [text, blankable, image_url]
+// Splits a raw English string into chunks: { text, blankable, image_url }
 // Trailing . or ? always becomes its own non-blankable chunk.
 function splitIntoChunks(text) {
   const trimmed = text.trim()
@@ -95,11 +95,11 @@ function ImagePicker({ onPick, onClose }) {
 export default function BlanksChunkEditor({ onSave, onCancel, initialData }) {
   const isEditing = !!initialData
 
-  const [pattern, setPattern] = useState(initialData?.pattern || '')
   const [sentence, setSentence] = useState(
     initialData ? initialData.chunks.map(c => c.text).join(' ') : ''
   )
   const [chunks, setChunks] = useState(initialData?.chunks || [])
+  const [jp, setJp] = useState(initialData?.jp || '')
   const [pickerForChunk, setPickerForChunk] = useState(null) // index of chunk showing image picker
   const [saving, setSaving] = useState(false)
 
@@ -145,7 +145,7 @@ export default function BlanksChunkEditor({ onSave, onCancel, initialData }) {
     if (chunks.length === 0) return
     setSaving(true)
     try {
-      await onSave({ pattern: pattern.trim(), chunks })
+      await onSave({ jp: jp.trim(), chunks })
     } finally {
       setSaving(false)
     }
@@ -153,18 +153,6 @@ export default function BlanksChunkEditor({ onSave, onCancel, initialData }) {
 
   return (
     <div className="bce-editor">
-
-      <div className="bce-row-2col">
-        <div className="bce-field">
-          <label className="bce-label">Pattern label</label>
-          <input
-            className="bce-input"
-            value={pattern}
-            onChange={e => setPattern(e.target.value)}
-            placeholder="e.g. My treasure is ..."
-          />
-        </div>
-      </div>
 
       <div className="bce-field">
         <label className="bce-label">English sentence</label>
@@ -249,6 +237,16 @@ export default function BlanksChunkEditor({ onSave, onCancel, initialData }) {
           </div>
         </div>
       )}
+
+      <div className="bce-field">
+        <label className="bce-label">Japanese translation</label>
+        <input
+          className="bce-input"
+          value={jp}
+          onChange={e => setJp(e.target.value)}
+          placeholder="e.g. 私の宝物はこのボールです"
+        />
+      </div>
 
       <div className="bce-footer">
         <button className="btn btn-ghost btn-md" onClick={onCancel}>Cancel</button>

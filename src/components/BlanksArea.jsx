@@ -5,6 +5,7 @@ import './BlanksArea.css'
 function SentenceRow({ sentence, onEdit, onDelete }) {
   return (
     <div className="bx-sentence-row">
+      <span className="bx-jp">{sentence.jp || <em>No JP translation</em>}</span>
       <div className="bx-chunks-preview">
         {sentence.chunks.map((chunk, i) => (
           <span
@@ -30,12 +31,12 @@ function SentenceRow({ sentence, onEdit, onDelete }) {
   )
 }
 
-function PatternGroup({
-  patternLabel, sentences,
-  onRenamePattern, onRequestAddSentence, onRequestEditSentence, onDeleteSentence,
+function PatternCard({
+  pattern, sentences,
+  onEditPattern, onDeletePattern,
+  onRequestAddSentence, onRequestEditSentence, onDeleteSentence,
 }) {
   const [expanded, setExpanded] = useState(true)
-  const [labelValue, setLabelValue] = useState(patternLabel)
 
   return (
     <div className="bx-pattern-card">
@@ -43,47 +44,110 @@ function PatternGroup({
         <button className="bx-pattern-toggle" onClick={() => setExpanded(v => !v)}>
           <i className={`ti ${expanded ? 'ti-chevron-down' : 'ti-chevron-right'}`} />
         </button>
-        <input
-          key={patternLabel}
-          className="bx-pattern-label-input"
-          defaultValue={labelValue}
-          onBlur={e => {
-            const newVal = e.target.value.trim()
-            if (newVal && newVal !== patternLabel) onRenamePattern(patternLabel, newVal)
-          }}
-          onKeyDown={e => { if (e.key === 'Enter') e.target.blur() }}
-          placeholder="Pattern label"
-        />
+        <div className="bx-pattern-text">
+          <span className="bx-pattern-frame">{pattern.frame}</span>
+          {pattern.gloss && <span className="bx-pattern-gloss">{pattern.gloss}</span>}
+        </div>
         <span className="bx-pattern-count">{sentences.length}</span>
         <div className="bx-pattern-actions">
           <button
             className="btn-icon-only btn-md bx-add-btn"
-            onClick={() => onRequestAddSentence(patternLabel)}
-            aria-label="Add sentence to this pattern"
+            onClick={() => onRequestAddSentence(pattern.id)}
+            aria-label="Add sentence"
           >
             <i className="ti ti-plus" />
+          </button>
+          <button className="btn-icon-only btn-md" onClick={() => onEditPattern(pattern)} aria-label="Edit pattern">
+            <i className="ti ti-edit" />
+          </button>
+          <button className="btn-icon-only btn-md danger" onClick={() => onDeletePattern(pattern.id)} aria-label="Delete pattern">
+            <i className="ti ti-trash" />
           </button>
         </div>
       </div>
 
       {expanded && (
         <div className="bx-sentences">
-          {sentences.map(s => (
-            <SentenceRow
-              key={s.id}
-              sentence={s}
-              onEdit={() => onRequestEditSentence(s)}
-              onDelete={onDeleteSentence}
-            />
-          ))}
+          {sentences.length === 0 ? (
+            <div className="bx-sentences-empty">No sentences yet — hit + to add one</div>
+          ) : (
+            sentences.map(s => (
+              <SentenceRow
+                key={s.id}
+                sentence={s}
+                onEdit={() => onRequestEditSentence(pattern.id, s)}
+                onDelete={onDeleteSentence}
+              />
+            ))
+          )}
         </div>
       )}
     </div>
   )
 }
 
-// Sentence add/edit modal
-function SentenceModal({ initialData, defaultPattern, onSave, onClose }) {
+// Pattern edit modal — frame + gloss, same as Blocks
+function PatternModal({ pattern, onSave, onClose }) {
+  const [frame, setFrame] = useState(pattern?.frame || '')
+  const [gloss, setGloss] = useState(pattern?.gloss || '')
+  const [saving, setSaving] = useState(false)
+  const isEditing = !!pattern
+
+  const handleSave = async () => {
+    if (!frame.trim()) return
+    setSaving(true)
+    try {
+      await onSave({ frame: frame.trim(), gloss: gloss.trim() })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <span className="modal-title">{isEditing ? 'Edit pattern' : 'Add pattern'}</span>
+          <button className="btn-icon-only btn-md" onClick={onClose}><i className="ti ti-x" /></button>
+        </div>
+        <div className="modal-body">
+          <div className="form-field">
+            <label className="form-label">Frame <span className="required">*</span></label>
+            <input
+              className="form-input"
+              value={frame}
+              onChange={e => setFrame(e.target.value)}
+              placeholder="e.g. My treasure is ..."
+              autoFocus
+            />
+          </div>
+          <div className="form-field">
+            <label className="form-label">Gloss (Japanese)</label>
+            <input
+              className="form-input"
+              value={gloss}
+              onChange={e => setGloss(e.target.value)}
+              placeholder="e.g. 私の宝物は〜です"
+            />
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-ghost btn-md" onClick={onClose}>Cancel</button>
+          <button
+            className="btn btn-primary btn-md"
+            onClick={handleSave}
+            disabled={!frame.trim() || saving}
+          >
+            {saving ? 'Saving…' : isEditing ? 'Save' : 'Add pattern'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Sentence add/edit modal — wraps BlanksChunkEditor in a wide modal
+function SentenceModal({ initialData, onSave, onClose }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal modal-wide" onClick={e => e.stopPropagation()}>
@@ -93,7 +157,7 @@ function SentenceModal({ initialData, defaultPattern, onSave, onClose }) {
         </div>
         <div className="modal-body" style={{ paddingTop: 0 }}>
           <BlanksChunkEditor
-            initialData={initialData || (defaultPattern ? { pattern: defaultPattern, chunks: [] } : null)}
+            initialData={initialData}
             onSave={onSave}
             onCancel={onClose}
           />
@@ -105,15 +169,19 @@ function SentenceModal({ initialData, defaultPattern, onSave, onClose }) {
 
 export default function BlanksArea({
   unit,
-  sentences, // flat array for the active unit
+  patterns,
+  sentences, // { [patternId]: sentence[] }
+  onAddPattern,
+  onUpdatePattern,
+  onDeletePattern,
   onAddSentence,
   onUpdateSentence,
   onDeleteSentence,
-  onBulkRenamePattern,
   onDeleteUnit,
   onRenameUnit,
 }) {
-  const [sentenceModal, setSentenceModal] = useState(null) // null | { mode: 'new'|'edit', pattern?, sentence? }
+  const [patternModal, setPatternModal] = useState(null) // null | 'new' | pattern obj
+  const [sentenceModal, setSentenceModal] = useState(null) // null | { patternId, sentence: null|obj }
 
   if (!unit) {
     return (
@@ -127,23 +195,24 @@ export default function BlanksArea({
     )
   }
 
-  // Group sentences by pattern text, preserving order of first appearance
-  const groups = []
-  const groupIndex = {}
-  for (const s of sentences) {
-    const label = s.pattern || 'Untitled pattern'
-    if (!(label in groupIndex)) {
-      groupIndex[label] = groups.length
-      groups.push({ label, sentences: [] })
+  const totalSentences = Object.values(sentences).reduce((acc, arr) => acc + arr.length, 0)
+
+  const handlePatternSave = async (fields) => {
+    if (patternModal === 'new') {
+      await onAddPattern(unit.id, fields, patterns.length)
+    } else {
+      await onUpdatePattern(patternModal.id, fields)
     }
-    groups[groupIndex[label]].sentences.push(s)
+    setPatternModal(null)
   }
 
   const handleSentenceSave = async (data) => {
-    if (sentenceModal.mode === 'edit') {
-      await onUpdateSentence(sentenceModal.sentence.id, data)
+    const { patternId, sentence } = sentenceModal
+    if (sentence) {
+      await onUpdateSentence(sentence.id, data)
     } else {
-      await onAddSentence(data, sentences.length)
+      const patternSentences = sentences[patternId] || []
+      await onAddSentence(patternId, data, patternSentences.length)
     }
     setSentenceModal(null)
   }
@@ -176,7 +245,7 @@ export default function BlanksArea({
           </div>
         </div>
         <div className="main-bar-right">
-          <span className="bx-meta-count">{groups.length} patterns · {sentences.length} sentences</span>
+          <span className="bx-meta-count">{patterns.length} patterns · {totalSentences} sentences</span>
           <button
             className="btn-icon-only btn-md danger"
             onClick={() => onDeleteUnit(unit.id)}
@@ -186,40 +255,48 @@ export default function BlanksArea({
           </button>
           <button
             className="btn btn-secondary btn-md"
-            onClick={() => setSentenceModal({ mode: 'new' })}
+            onClick={() => setPatternModal('new')}
           >
             <i className="ti ti-plus" style={{ fontSize: '16px' }} />
-            Sentence
+            Pattern
           </button>
         </div>
       </div>
 
       <div className="bx-content">
-        {groups.length === 0 ? (
+        {patterns.length === 0 ? (
           <div className="main-empty">
-            <i className="ti ti-text-size empty-state-icon" />
-            <span className="empty-state-title">No sentences yet</span>
-            <span className="empty-state-sub">Hit + Sentence to add your first one</span>
+            <i className="ti ti-layout-list empty-state-icon" />
+            <span className="empty-state-title">No patterns yet</span>
+            <span className="empty-state-sub">Hit + Pattern to add your first sentence frame</span>
           </div>
         ) : (
-          groups.map(group => (
-            <PatternGroup
-              key={group.label}
-              patternLabel={group.label}
-              sentences={group.sentences}
-              onRenamePattern={onBulkRenamePattern}
-              onRequestAddSentence={(patternLabel) => setSentenceModal({ mode: 'new', pattern: patternLabel })}
-              onRequestEditSentence={(sentence) => setSentenceModal({ mode: 'edit', sentence })}
+          patterns.map(pattern => (
+            <PatternCard
+              key={pattern.id}
+              pattern={pattern}
+              sentences={sentences[pattern.id] || []}
+              onEditPattern={p => setPatternModal(p)}
+              onDeletePattern={onDeletePattern}
+              onRequestAddSentence={(patternId) => setSentenceModal({ patternId, sentence: null })}
+              onRequestEditSentence={(patternId, sentence) => setSentenceModal({ patternId, sentence })}
               onDeleteSentence={onDeleteSentence}
             />
           ))
         )}
       </div>
 
+      {patternModal !== null && (
+        <PatternModal
+          pattern={patternModal === 'new' ? null : patternModal}
+          onSave={handlePatternSave}
+          onClose={() => setPatternModal(null)}
+        />
+      )}
+
       {sentenceModal !== null && (
         <SentenceModal
-          initialData={sentenceModal.mode === 'edit' ? sentenceModal.sentence : null}
-          defaultPattern={sentenceModal.pattern}
+          initialData={sentenceModal.sentence}
           onSave={handleSentenceSave}
           onClose={() => setSentenceModal(null)}
         />

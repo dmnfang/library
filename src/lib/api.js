@@ -559,8 +559,12 @@ export async function deleteBlocksSentence(id) {
   if (error) throw error
 }
 
+// ── REPLACE your entire old "BLANKS UNITS" / "BLANKS SENTENCES" section in lib/api.js with this ──
+// (delete fetchBlanksUnits, addBlanksUnit, renameBlanksUnit, deleteBlanksUnit,
+//  fetchBlanksSentences, addBlanksSentence, updateBlanksSentence, deleteBlanksSentence,
+//  bulkRenameBlanksPattern — then paste this whole block in their place)
+
 // ── BLANKS UNITS ──
-// Append these to lib/api.js
 
 export async function fetchBlanksUnits(grade) {
   const { data, error } = await supabase
@@ -598,22 +602,60 @@ export async function deleteBlanksUnit(id) {
   if (error) throw error
 }
 
+// ── BLANKS PATTERNS ──
+
+export async function fetchBlanksPatterns(unitId) {
+  const { data, error } = await supabase
+    .from('blanks_patterns')
+    .select('*')
+    .eq('unit_id', unitId)
+    .order('sort_order')
+  if (error) throw error
+  return data
+}
+
+export async function addBlanksPattern(unitId, frame, gloss, sort_order) {
+  const { data, error } = await supabase
+    .from('blanks_patterns')
+    .insert({ unit_id: unitId, frame, gloss, sort_order })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updateBlanksPattern(id, fields) {
+  const { error } = await supabase
+    .from('blanks_patterns')
+    .update(fields)
+    .eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteBlanksPattern(id) {
+  const { error } = await supabase
+    .from('blanks_patterns')
+    .delete()
+    .eq('id', id)
+  if (error) throw error
+}
+
 // ── BLANKS SENTENCES ──
 
-export async function fetchBlanksSentences(unitId) {
+export async function fetchBlanksSentences(patternId) {
   const { data, error } = await supabase
     .from('blanks_sentences')
     .select('*')
-    .eq('unit_id', unitId)
+    .eq('pattern_id', patternId)
     .order('position')
   if (error) throw error
   return data
 }
 
-export async function addBlanksSentence(unitId, pattern, chunks, position) {
+export async function addBlanksSentence(patternId, jp, chunks, position) {
   const { data, error } = await supabase
     .from('blanks_sentences')
-    .insert({ unit_id: unitId, pattern, chunks, position })
+    .insert({ pattern_id: patternId, jp, chunks, position })
     .select()
     .single()
   if (error) throw error
@@ -633,14 +675,5 @@ export async function deleteBlanksSentence(id) {
     .from('blanks_sentences')
     .delete()
     .eq('id', id)
-  if (error) throw error
-}
-
-export async function bulkRenameBlanksPattern(unitId, oldPattern, newPattern) {
-  const { error } = await supabase
-    .from('blanks_sentences')
-    .update({ pattern: newPattern })
-    .eq('unit_id', unitId)
-    .eq('pattern', oldPattern)
   if (error) throw error
 }

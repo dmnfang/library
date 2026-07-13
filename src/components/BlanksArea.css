@@ -96,7 +96,7 @@
   margin-right: 4px;
 }
 
-/* Pattern group card */
+/* Pattern card */
 .bx-pattern-card {
   background: var(--color-bg-surface);
   border: 0.5px solid var(--color-border-default);
@@ -132,28 +132,25 @@
   background: var(--color-bg-surface-raised);
 }
 
-.bx-pattern-label-input {
+.bx-pattern-text {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bx-pattern-frame {
   font-family: var(--font-body);
   font-size: 15px;
   font-weight: 600;
   color: var(--color-text-primary);
-  border: none;
-  border-bottom: 1px solid transparent;
-  outline: none;
-  background: transparent;
-  padding: 0;
-  min-width: 0;
-  cursor: text;
-  transition: border-color var(--motion-micro);
 }
 
-.bx-pattern-label-input:hover {
-  border-bottom: 1px dashed var(--color-border-strong);
-}
-
-.bx-pattern-label-input:focus {
-  border-bottom: 1px solid var(--color-text-primary);
+.bx-pattern-gloss {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-text-tertiary);
 }
 
 .bx-pattern-count {
@@ -188,6 +185,13 @@
   flex-direction: column;
 }
 
+.bx-sentences-empty {
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+}
+
 .bx-sentence-row {
   display: flex;
   align-items: center;
@@ -207,6 +211,18 @@
 
 .bx-sentence-row:hover .bx-sentence-actions {
   opacity: 1;
+}
+
+.bx-jp {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  min-width: 160px;
+  flex-shrink: 0;
+}
+
+.bx-jp em {
+  color: var(--color-text-tertiary);
+  font-style: italic;
 }
 
 .bx-chunks-preview {
