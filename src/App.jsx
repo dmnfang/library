@@ -3,7 +3,6 @@ import Topbar from './components/Topbar'
 import Sidebar from './components/Sidebar'
 import MainArea from './components/MainArea'
 import BlocksArea from './components/BlocksArea'
-import BlanksArea from './components/BlanksArea'
 import CardModal from './components/CardModal'
 import ConfirmModal from './components/ConfirmModal'
 import QuestionModal from './components/QuestionModal'
@@ -23,9 +22,6 @@ import {
   fetchBlocksUnits, addBlocksUnit, renameBlocksUnit, deleteBlocksUnit,
   fetchBlocksPatterns, addBlocksPattern, updateBlocksPattern, deleteBlocksPattern,
   fetchBlocksSentences, addBlocksSentence, updateBlocksSentence, deleteBlocksSentence,
-  fetchBlanksUnits, addBlanksUnit, renameBlanksUnit, deleteBlanksUnit,
-  fetchBlanksPatterns, addBlanksPattern, updateBlanksPattern, deleteBlanksPattern,
-  fetchBlanksSentences, addBlanksSentence, updateBlanksSentence, deleteBlanksSentence,
 } from './lib/api'
 
 function App() {
@@ -58,13 +54,6 @@ function App() {
   const [blocksPatterns, setBlocksPatterns] = useState([]) // pattern[]
   const [blocksSentences, setBlocksSentences] = useState({}) // { [patternId]: sentence[] }
   const [blocksUnitCounts, setBlocksUnitCounts] = useState({}) // { [unitId]: patternCount }
-
-  // ── Blanks state (mirrors Blocks) ──
-  const [blanksUnits, setBlanksUnits] = useState([])
-  const [activeBlanksUnit, setActiveBlanksUnit] = useState(null)
-  const [blanksPatterns, setBlanksPatterns] = useState([]) // pattern[]
-  const [blanksSentences, setBlanksSentences] = useState({}) // { [patternId]: sentence[] }
-  const [blanksUnitCounts, setBlanksUnitCounts] = useState({}) // { [unitId]: patternCount }
 
   useEffect(() => {
     fetchSources().then(data => {
@@ -181,55 +170,17 @@ function App() {
     })
   }, [activeBlocksUnit?.id])
 
-  // Fetch blanks units when grade changes
-  useEffect(() => {
-    if (contentType !== 'blanks' || !activeSource) return
-    setBlanksUnits([])
-    setActiveBlanksUnit(null)
-    setBlanksPatterns([])
-    setBlanksSentences({})
-    setBlanksUnitCounts({})
-    fetchBlanksUnits(activeSource.id).then(async (unitList) => {
-      setBlanksUnits(unitList)
-      const counts = {}
-      await Promise.all(unitList.map(async (u) => {
-        const patterns = await fetchBlanksPatterns(u.id)
-        counts[u.id] = patterns.length
-      }))
-      setBlanksUnitCounts(counts)
-    })
-  }, [activeSource?.id, contentType])
-
-  // Fetch patterns + sentences when blanks unit changes
-  useEffect(() => {
-    if (!activeBlanksUnit) return
-    setBlanksPatterns([])
-    setBlanksSentences({})
-    fetchBlanksPatterns(activeBlanksUnit.id).then(async (patterns) => {
-      setBlanksPatterns(patterns)
-      const sentMap = {}
-      await Promise.all(patterns.map(async (p) => {
-        const sents = await fetchBlanksSentences(p.id)
-        sentMap[p.id] = sents
-      }))
-      setBlanksSentences(sentMap)
-    })
-  }, [activeBlanksUnit?.id])
-
   const handleSourceChange = (source) => {
     setActiveSource(source)
     setActiveCategory(null)
     setActiveUnit(null)
     setActiveLcDeck(null)
     setActiveBlocksUnit(null)
-    setActiveBlanksUnit(null)
     setCards([])
     setQuestions([])
     setLcModes([])
     setBlocksPatterns([])
     setBlocksSentences({})
-    setBlanksPatterns([])
-    setBlanksSentences({})
     if (contentType === 'luckycard') setLcFetchKey(k => k + 1)
   }
 
@@ -239,14 +190,11 @@ function App() {
     setActiveUnit(null)
     setActiveLcDeck(null)
     setActiveBlocksUnit(null)
-    setActiveBlanksUnit(null)
     setCards([])
     setQuestions([])
     setLcModes([])
     setBlocksPatterns([])
     setBlocksSentences({})
-    setBlanksPatterns([])
-    setBlanksSentences({})
     if (type === 'images') {
       setActiveSource(sources[0] || null)
     } else if (type === 'questions') {
@@ -256,8 +204,6 @@ function App() {
       setLcFetchKey(k => k + 1)
     } else if (type === 'blocks') {
       setActiveSource({ id: '5', name: 'Grade 5' })
-    } else if (type === 'blanks') {
-      setActiveSource({ id: 5, name: 'Grade 5' })
     }
   }
 
@@ -605,106 +551,6 @@ function App() {
     })
   }
 
-  // ── Blanks handlers (mirrors Blocks) ──
-
-  const handleSelectBlanksUnit = (unit) => {
-    if (activeBlanksUnit?.id === unit.id) return
-    setActiveBlanksUnit(unit)
-    setBlanksPatterns([])
-    setBlanksSentences({})
-  }
-
-  const handleAddBlanksUnit = async () => {
-    const unit_number = blanksUnits.length + 1
-    const newUnit = await addBlanksUnit(activeSource.id, unit_number, 'New Unit')
-    setBlanksUnits(prev => [...prev, newUnit])
-    setBlanksUnitCounts(prev => ({ ...prev, [newUnit.id]: 0 }))
-    setActiveBlanksUnit(newUnit)
-    setBlanksPatterns([])
-    setBlanksSentences({})
-  }
-
-  const handleDeleteBlanksUnit = async (id) => {
-    await deleteBlanksUnit(id)
-    setBlanksUnits(prev => prev.filter(u => u.id !== id))
-    setBlanksUnitCounts(prev => {
-      const updated = { ...prev }
-      delete updated[id]
-      return updated
-    })
-    setActiveBlanksUnit(null)
-    setBlanksPatterns([])
-    setBlanksSentences({})
-  }
-
-  const handleRenameBlanksUnit = async (id, fields) => {
-    await renameBlanksUnit(id, fields)
-    setBlanksUnits(prev => prev.map(u =>
-      u.id === id ? { ...u, ...fields } : u
-    ))
-    setActiveBlanksUnit(prev =>
-      prev?.id === id ? { ...prev, ...fields } : prev
-    )
-  }
-
-  const handleAddBlanksPattern = async (unitId, fields, sort_order) => {
-    const newPattern = await addBlanksPattern(unitId, fields.frame, fields.gloss, sort_order)
-    setBlanksPatterns(prev => [...prev, newPattern])
-    setBlanksSentences(prev => ({ ...prev, [newPattern.id]: [] }))
-    setBlanksUnitCounts(prev => ({ ...prev, [unitId]: (prev[unitId] ?? 0) + 1 }))
-  }
-
-  const handleUpdateBlanksPattern = async (id, fields) => {
-    await updateBlanksPattern(id, fields)
-    setBlanksPatterns(prev => prev.map(p => p.id === id ? { ...p, ...fields } : p))
-  }
-
-  const handleDeleteBlanksPattern = async (id) => {
-    await deleteBlanksPattern(id)
-    setBlanksPatterns(prev => prev.filter(p => p.id !== id))
-    setBlanksSentences(prev => {
-      const updated = { ...prev }
-      delete updated[id]
-      return updated
-    })
-    if (activeBlanksUnit) {
-      setBlanksUnitCounts(prev => ({
-        ...prev,
-        [activeBlanksUnit.id]: Math.max(0, (prev[activeBlanksUnit.id] ?? 1) - 1)
-      }))
-    }
-  }
-
-  const handleAddBlanksSentence = async (patternId, { jp, chunks }, position) => {
-    const newSentence = await addBlanksSentence(patternId, jp, chunks, position)
-    setBlanksSentences(prev => ({
-      ...prev,
-      [patternId]: [...(prev[patternId] || []), newSentence]
-    }))
-  }
-
-  const handleUpdateBlanksSentence = async (id, { jp, chunks }) => {
-    await updateBlanksSentence(id, { jp, chunks })
-    setBlanksSentences(prev => {
-      const updated = { ...prev }
-      for (const pid of Object.keys(updated)) {
-        updated[pid] = updated[pid].map(s => s.id === id ? { ...s, jp, chunks } : s)
-      }
-      return updated
-    })
-  }
-
-  const handleDeleteBlanksSentence = async (id) => {
-    await deleteBlanksSentence(id)
-    setBlanksSentences(prev => {
-      const updated = { ...prev }
-      for (const pid of Object.keys(updated)) {
-        updated[pid] = updated[pid].filter(s => s.id !== id)
-      }
-      return updated
-    })
-  }
-
   if (loading) {
     return (
       <div style={{
@@ -722,48 +568,42 @@ function App() {
   }
 
   const isBlocks = contentType === 'blocks'
-  const isBlanks = contentType === 'blanks'
 
   const sidebarCategories =
     contentType === 'images' ? categories :
     contentType === 'questions' ? units :
     contentType === 'luckycard' ? lcDecks :
-    contentType === 'blocks' ? blocksUnits :
-    blanksUnits
+    blocksUnits
 
   const sidebarActiveCategory =
     contentType === 'images' ? activeCategory :
     contentType === 'questions' ? activeUnit :
     contentType === 'luckycard' ? activeLcDeck :
-    contentType === 'blocks' ? activeBlocksUnit :
-    activeBlanksUnit
+    activeBlocksUnit
 
   const sidebarCardCounts =
     contentType === 'images' ? cardCounts :
     contentType === 'questions' ? questionCounts :
     contentType === 'luckycard' ? lcModeCounts :
-    contentType === 'blocks' ? blocksUnitCounts :
-    blanksUnitCounts
+    blocksUnitCounts
 
   const sidebarOnSelect =
     contentType === 'images' ? handleSelectCategory :
     contentType === 'questions' ? handleSelectUnit :
     contentType === 'luckycard' ? handleSelectLcDeck :
-    contentType === 'blocks' ? handleSelectBlocksUnit :
-    handleSelectBlanksUnit
+    handleSelectBlocksUnit
 
   const sidebarOnAdd =
     contentType === 'images' ? handleAddCategory :
     contentType === 'questions' ? handleAddUnit :
     contentType === 'luckycard' ? handleAddLcDeck :
-    contentType === 'blocks' ? handleAddBlocksUnit :
-    handleAddBlanksUnit
+    handleAddBlocksUnit
 
   const mainCategory =
     contentType === 'images' ? activeCategory :
     contentType === 'questions' ? activeUnit :
     contentType === 'luckycard' ? activeLcDeck :
-    null // blocks/blanks use their own Area components
+    null // blocks uses BlocksArea directly
 
   const mainCards =
     contentType === 'images' ? cards :
@@ -833,20 +673,6 @@ function App() {
             onDeleteSentence={handleDeleteBlocksSentence}
             onDeleteUnit={handleDeleteBlocksUnit}
             onRenameUnit={handleRenameBlocksUnit}
-          />
-        ) : isBlanks ? (
-          <BlanksArea
-            unit={activeBlanksUnit}
-            patterns={blanksPatterns}
-            sentences={blanksSentences}
-            onAddPattern={handleAddBlanksPattern}
-            onUpdatePattern={handleUpdateBlanksPattern}
-            onDeletePattern={handleDeleteBlanksPattern}
-            onAddSentence={handleAddBlanksSentence}
-            onUpdateSentence={handleUpdateBlanksSentence}
-            onDeleteSentence={handleDeleteBlanksSentence}
-            onDeleteUnit={handleDeleteBlanksUnit}
-            onRenameUnit={handleRenameBlanksUnit}
           />
         ) : (
           <MainArea

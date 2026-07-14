@@ -24,26 +24,22 @@ function Sidebar({ source, categories, activeCategory, cardCounts, contentType, 
     contentType === 'questions' ? 'unit' :
     contentType === 'luckycard' ? 'deck' :
     contentType === 'blocks' ? 'unit' :
-    contentType === 'blanks' ? 'unit' :
     'category'
 
   const itemLabelPlural =
     contentType === 'questions' ? 'units' :
     contentType === 'luckycard' ? 'decks' :
     contentType === 'blocks' ? 'units' :
-    contentType === 'blanks' ? 'units' :
     'categories'
 
   const childLabel =
     contentType === 'questions' ? 'question' :
     contentType === 'blocks' ? 'pattern' :
-    contentType === 'blanks' ? 'sentence' :
     'card'
 
   const childLabelPlural =
     contentType === 'questions' ? 'questions' :
     contentType === 'blocks' ? 'patterns' :
-    contentType === 'blanks' ? 'sentences' :
     'cards'
 
   const confirmMessage = `Deleting <strong>${categories.length} ${categories.length === 1 ? itemLabel : itemLabelPlural}</strong> will permanently remove <strong>${totalCards} ${totalCards === 1 ? childLabel : childLabelPlural}</strong>. This cannot be undone.`
@@ -116,8 +112,6 @@ function Sidebar({ source, categories, activeCategory, cardCounts, contentType, 
                 <span className="cat-label">
                   {contentType === 'blocks'
                     ? <>{cat.name} <span style={{ color: 'var(--color-text-tertiary)', fontWeight: 400 }}>— {cat.title}</span></>
-                    : contentType === 'blanks'
-                    ? <>Unit {cat.unit_number} <span style={{ color: 'var(--color-text-tertiary)', fontWeight: 400 }}>— {cat.title}</span></>
                     : cat.name}
                 </span>
                 <div className="cat-count">{cardCounts[cat.id] ?? 0}</div>

@@ -6,7 +6,6 @@
   gap: 12px;
 }
 
-/* Whole panel scrolls naturally instead of a trapped inner box */
 .ba-scroll-area {
   overflow-y: auto;
 }
@@ -18,64 +17,6 @@
   color: var(--color-text-tertiary);
   white-space: nowrap;
   margin-right: 4px;
-}
-
-.ba-unit-heading {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.ba-unit-eyebrow-input {
-  font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-text-tertiary);
-  border: none;
-  border-bottom: 1px solid transparent;
-  outline: none;
-  background: transparent;
-  padding: 0;
-  width: auto;
-  min-width: 60px;
-  max-width: 200px;
-  cursor: text;
-  transition: border-color var(--motion-micro);
-}
-
-.ba-unit-eyebrow-input:hover {
-  border-bottom: 1px dashed var(--color-border-strong);
-}
-
-.ba-unit-eyebrow-input:focus {
-  border-bottom: 1px solid var(--color-text-primary);
-}
-
-.ba-unit-title-input {
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--color-text-title);
-  border: none;
-  border-bottom: 1px solid transparent;
-  outline: none;
-  background: transparent;
-  padding: 0;
-  width: auto;
-  min-width: 120px;
-  max-width: 500px;
-  cursor: text;
-  transition: border-color var(--motion-micro);
-}
-
-.ba-unit-title-input:hover {
-  border-bottom: 1px dashed var(--color-border-strong);
-}
-
-.ba-unit-title-input:focus {
-  border-bottom: 1px solid var(--color-text-primary);
 }
 
 /* Pattern card */
@@ -151,7 +92,7 @@
   flex-shrink: 0;
 }
 
-/* + Sentence button — pale indigo (Blocks accent) to stand out from edit/delete */
+/* + Sentence button — pale indigo to stand out from edit/delete */
 .ba-add-btn {
   background: #EDF0FB;
   color: #4A5FC1;
@@ -217,6 +158,9 @@
 }
 
 .ba-chunk-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
@@ -224,6 +168,13 @@
   border-radius: 6px;
   color: #2E2C28;
   white-space: nowrap;
+}
+
+.ba-chunk-thumb {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  border-radius: 3px;
 }
 
 .ba-tier-badge {

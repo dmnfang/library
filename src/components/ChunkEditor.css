@@ -95,14 +95,20 @@
   box-shadow: none !important;
 }
 
-/* Split button below multi-word chunk */
+/* Toolbar row under each block: split + blank toggle */
+.ce-chunk-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
 .ce-split-btn {
   font-size: 11px;
   color: var(--color-text-tertiary);
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0 4px;
+  padding: 2px 4px;
   display: flex;
   align-items: center;
   gap: 2px;
@@ -111,6 +117,95 @@
 
 .ce-split-btn:hover {
   color: var(--color-text-primary);
+}
+
+.ce-blank-toggle {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition: color var(--motion-micro), background var(--motion-micro);
+}
+
+.ce-blank-toggle:hover {
+  color: #4A5FC1;
+  background: #EDF0FB;
+}
+
+.ce-blank-toggle.active {
+  color: #4A5FC1;
+  background: #EDF0FB;
+}
+
+/* Clue row beneath a blankable chunk */
+.ce-clue-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.ce-clue-add {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4A5FC1;
+  background: #EDF0FB;
+  border: none;
+  border-radius: 6px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: background var(--motion-micro);
+}
+
+.ce-clue-add:hover {
+  background: #E0E5F8;
+}
+
+.ce-clue-thumb {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1.5px solid #4A5FC1;
+  background: var(--color-bg-surface);
+  cursor: pointer;
+  transition: filter var(--motion-micro);
+}
+
+.ce-clue-thumb:hover {
+  filter: brightness(0.92);
+}
+
+.ce-clue-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 2px;
+}
+
+.ce-clue-remove {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-text-primary);
+  color: var(--color-bg-surface);
+  border: none;
+  font-size: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
 /* Gap between chunks — clickable merge zone, click merges immediately */
@@ -183,6 +278,98 @@
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+}
+
+/* Image picker as a centered overlay — never clipped by the parent modal */
+.ce-picker-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.ce-picker-card {
+  width: 360px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: var(--color-bg-surface);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: var(--shadow-overlay);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bce-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bce-picker-title {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.picker-dropdowns {
+  display: flex;
+  gap: 8px;
+}
+
+.picker-select {
+  flex: 1;
+  font-size: 13px;
+}
+
+.picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.picker-img-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 4px;
+  transition: background var(--motion-micro);
+}
+
+.picker-img-item:hover {
+  background: var(--color-bg-surface-raised);
+}
+
+.picker-img-item img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border-radius: 4px;
+  background: var(--color-bg-surface-raised);
+}
+
+.picker-img-label {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 /* Footer */

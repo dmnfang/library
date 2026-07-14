@@ -417,9 +417,7 @@ export async function updateLCLine(id, fields) {
   if (error) throw error
 }
 
-// ── ADD these two functions to lib/api.js ──
-
-// In the CARDS section, after updateCard:
+// ── CARD POSITIONS / CARDBOX ──
 
 export async function updateCardPositions(cards) {
   const updates = cards.map((card, index) => ({
@@ -434,8 +432,6 @@ export async function updateCardPositions(cards) {
     .upsert(updates)
   if (error) throw error
 }
-
-// In the CATEGORIES section, after renameCategory:
 
 export async function setCategoryCardboxEnabled(id, enabled) {
   const { error } = await supabase
@@ -554,125 +550,6 @@ export async function updateBlocksSentence(id, fields) {
 export async function deleteBlocksSentence(id) {
   const { error } = await supabase
     .from('blocks_sentences')
-    .delete()
-    .eq('id', id)
-  if (error) throw error
-}
-
-// ── REPLACE your entire old "BLANKS UNITS" / "BLANKS SENTENCES" section in lib/api.js with this ──
-// (delete fetchBlanksUnits, addBlanksUnit, renameBlanksUnit, deleteBlanksUnit,
-//  fetchBlanksSentences, addBlanksSentence, updateBlanksSentence, deleteBlanksSentence,
-//  bulkRenameBlanksPattern — then paste this whole block in their place)
-
-// ── BLANKS UNITS ──
-
-export async function fetchBlanksUnits(grade) {
-  const { data, error } = await supabase
-    .from('blanks_units')
-    .select('*')
-    .eq('grade', grade)
-    .order('unit_number')
-  if (error) throw error
-  return data
-}
-
-export async function addBlanksUnit(grade, unit_number, title) {
-  const { data, error } = await supabase
-    .from('blanks_units')
-    .insert({ grade, unit_number, title })
-    .select()
-    .single()
-  if (error) throw error
-  return data
-}
-
-export async function renameBlanksUnit(id, fields) {
-  const { error } = await supabase
-    .from('blanks_units')
-    .update(fields)
-    .eq('id', id)
-  if (error) throw error
-}
-
-export async function deleteBlanksUnit(id) {
-  const { error } = await supabase
-    .from('blanks_units')
-    .delete()
-    .eq('id', id)
-  if (error) throw error
-}
-
-// ── BLANKS PATTERNS ──
-
-export async function fetchBlanksPatterns(unitId) {
-  const { data, error } = await supabase
-    .from('blanks_patterns')
-    .select('*')
-    .eq('unit_id', unitId)
-    .order('sort_order')
-  if (error) throw error
-  return data
-}
-
-export async function addBlanksPattern(unitId, frame, gloss, sort_order) {
-  const { data, error } = await supabase
-    .from('blanks_patterns')
-    .insert({ unit_id: unitId, frame, gloss, sort_order })
-    .select()
-    .single()
-  if (error) throw error
-  return data
-}
-
-export async function updateBlanksPattern(id, fields) {
-  const { error } = await supabase
-    .from('blanks_patterns')
-    .update(fields)
-    .eq('id', id)
-  if (error) throw error
-}
-
-export async function deleteBlanksPattern(id) {
-  const { error } = await supabase
-    .from('blanks_patterns')
-    .delete()
-    .eq('id', id)
-  if (error) throw error
-}
-
-// ── BLANKS SENTENCES ──
-
-export async function fetchBlanksSentences(patternId) {
-  const { data, error } = await supabase
-    .from('blanks_sentences')
-    .select('*')
-    .eq('pattern_id', patternId)
-    .order('position')
-  if (error) throw error
-  return data
-}
-
-export async function addBlanksSentence(patternId, jp, chunks, position) {
-  const { data, error } = await supabase
-    .from('blanks_sentences')
-    .insert({ pattern_id: patternId, jp, chunks, position })
-    .select()
-    .single()
-  if (error) throw error
-  return data
-}
-
-export async function updateBlanksSentence(id, fields) {
-  const { error } = await supabase
-    .from('blanks_sentences')
-    .update(fields)
-    .eq('id', id)
-  if (error) throw error
-}
-
-export async function deleteBlanksSentence(id) {
-  const { error } = await supabase
-    .from('blanks_sentences')
     .delete()
     .eq('id', id)
   if (error) throw error

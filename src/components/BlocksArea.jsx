@@ -15,18 +15,25 @@ function SentenceRow({ sentence, onEdit, onDelete }) {
       <span className="ba-jp">{sentence.jp || <em>No JP prompt</em>}</span>
       <div className="ba-chunks-preview">
         {sentence.chunks.map((chunk, i) => {
-          const role = chunk[1] ? ROLE_MAP[chunk[1]] : null
+          const [text, roleKey, blankable, image_url] = chunk
+          const role = roleKey ? ROLE_MAP[roleKey] : null
           return (
             <span
               key={i}
               className="ba-chunk-pill"
               style={{
-                background: role ? role.tint : 'var(--color-bg-surface-raised)',
-                border: `1.5px solid ${role ? role.dark : 'var(--color-border-default)'}`,
-                boxShadow: role ? `0 2px 0 ${role.dark}` : '0 2px 0 var(--color-border-default)',
+                background: blankable ? '#EDF0FB' : (role ? role.tint : 'var(--color-bg-surface-raised)'),
+                border: blankable
+                  ? '1.5px dashed #4A5FC1'
+                  : `1.5px solid ${role ? role.dark : 'var(--color-border-default)'}`,
+                boxShadow: `0 2px 0 ${blankable ? '#37479A' : (role ? role.dark : 'var(--color-border-default)')}`,
+                color: blankable ? '#37479A' : '#2E2C28',
               }}
             >
-              {chunk[0]}
+              {blankable && image_url && (
+                <img className="ba-chunk-thumb" src={image_url} alt="" />
+              )}
+              {blankable ? '＿＿＿' : text}
             </span>
           )
         })}
@@ -61,7 +68,6 @@ function PatternCard({
 
   return (
     <div className="ba-pattern-card">
-      {/* Pattern header */}
       <div className="ba-pattern-header">
         <button className="ba-pattern-toggle" onClick={() => setExpanded(v => !v)}>
           <i className={`ti ${expanded ? 'ti-chevron-down' : 'ti-chevron-right'}`} />
@@ -88,7 +94,6 @@ function PatternCard({
         </div>
       </div>
 
-      {/* Sentences */}
       {expanded && (
         <div className="ba-sentences">
           {sentences.length === 0 ? (
@@ -250,25 +255,15 @@ export default function BlocksArea({
 
   return (
     <div className="main-area ba-scroll-area">
-      {/* Top bar */}
       <div className="main-bar">
         <div className="main-bar-left">
-          <div className="ba-unit-heading">
+          <div className="main-bar-title-wrap">
+            <span className="main-bar-title-sizer">{unit.title || unit.name || ' '}</span>
             <input
-              key={unit.id + '-name'}
-              className="ba-unit-eyebrow-input"
-              defaultValue={unit.name}
-              onBlur={e => onRenameUnit(unit.id, { name: e.target.value })}
+              className="main-bar-title-input"
+              defaultValue={unit.title || unit.name}
+              onBlur={e => onRenameUnit(unit.id, e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') e.target.blur() }}
-              placeholder="Unit 1"
-            />
-            <input
-              key={unit.id + '-title'}
-              className="ba-unit-title-input"
-              defaultValue={unit.title}
-              onBlur={e => onRenameUnit(unit.id, { title: e.target.value })}
-              onKeyDown={e => { if (e.key === 'Enter') e.target.blur() }}
-              placeholder="Unit title"
             />
           </div>
         </div>
@@ -291,7 +286,6 @@ export default function BlocksArea({
         </div>
       </div>
 
-      {/* Patterns */}
       <div className="ba-content">
         {patterns.length === 0 ? (
           <div className="main-empty">
