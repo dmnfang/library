@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { supabase } from './supabase'
 import Topbar from './components/Topbar'
 import Sidebar from './components/Sidebar'
 import MainArea from './components/MainArea'
@@ -646,6 +647,7 @@ function App() {
         onAddSource={handleAddSource}
         contentType={contentType}
         onContentTypeChange={handleContentTypeChange}
+        onSignOut={() => supabase.auth.signOut()}
       />
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <Sidebar

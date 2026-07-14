@@ -28,7 +28,7 @@ const BLOCKS_GRADES = [
   { id: '6', name: 'Grade 6' },
 ]
 
-function Topbar({ activeSource, onSourceChange, sources, onAddSource, contentType, onContentTypeChange }) {
+function Topbar({ activeSource, onSourceChange, sources, onAddSource, contentType, onContentTypeChange, onSignOut }) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef(null)
 
@@ -113,17 +113,22 @@ function Topbar({ activeSource, onSourceChange, sources, onAddSource, contentTyp
             </button>
           ))
         )}
+
+        {/* Group button sits right next to the chips it manages */}
+        {contentType === 'images' && (
+          <button className="btn btn-secondary btn-md" onClick={onAddSource}>
+            <i className="ti ti-plus" style={{ fontSize: '16px' }} />
+            Group
+          </button>
+        )}
       </div>
 
       <div className="topbar-spacer" />
 
-      {/* Right action button */}
-      {contentType === 'images' && (
-        <button className="btn btn-secondary btn-md" onClick={onAddSource}>
-          <i className="ti ti-plus" style={{ fontSize: '16px' }} />
-          Group
-        </button>
-      )}
+      {/* Sign out — real flex item, matches height/alignment of every other button */}
+      <button className="btn btn-secondary btn-md" onClick={onSignOut}>
+        Sign out
+      </button>
     </div>
   )
 }

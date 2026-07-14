@@ -15,25 +15,18 @@ function SentenceRow({ sentence, onEdit, onDelete }) {
       <span className="ba-jp">{sentence.jp || <em>No JP prompt</em>}</span>
       <div className="ba-chunks-preview">
         {sentence.chunks.map((chunk, i) => {
-          const [text, roleKey, blankable, image_url] = chunk
-          const role = roleKey ? ROLE_MAP[roleKey] : null
+          const role = chunk[1] ? ROLE_MAP[chunk[1]] : null
           return (
             <span
               key={i}
               className="ba-chunk-pill"
               style={{
-                background: blankable ? '#EDF0FB' : (role ? role.tint : 'var(--color-bg-surface-raised)'),
-                border: blankable
-                  ? '1.5px dashed #4A5FC1'
-                  : `1.5px solid ${role ? role.dark : 'var(--color-border-default)'}`,
-                boxShadow: `0 2px 0 ${blankable ? '#37479A' : (role ? role.dark : 'var(--color-border-default)')}`,
-                color: blankable ? '#37479A' : '#2E2C28',
+                background: role ? role.tint : 'var(--color-bg-surface-raised)',
+                border: `1.5px solid ${role ? role.dark : 'var(--color-border-default)'}`,
+                boxShadow: `0 2px 0 ${role ? role.dark : 'var(--color-border-default)'}`,
               }}
             >
-              {blankable && image_url && (
-                <img className="ba-chunk-thumb" src={image_url} alt="" />
-              )}
-              {blankable ? '＿＿＿' : text}
+              {chunk[0]}
             </span>
           )
         })}

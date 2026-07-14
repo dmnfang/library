@@ -37,31 +37,7 @@ function AuthGate({ children }) {
     return <Login />
   }
 
-  return (
-    <>
-      {children}
-      <button
-        onClick={() => supabase.auth.signOut()}
-        style={{
-          position: 'fixed',
-          top: 12,
-          right: 16,
-          zIndex: 1000,
-          background: 'var(--color-bg-surface)',
-          border: '1px solid var(--color-border-default)',
-          borderRadius: '999px',
-          padding: '6px 14px',
-          fontSize: '13px',
-          fontWeight: 600,
-          fontFamily: 'var(--font-body)',
-          color: 'var(--color-text-secondary)',
-          cursor: 'pointer',
-        }}
-      >
-        Sign out
-      </button>
-    </>
-  )
+  return children
 }
 
 export default AuthGate
