@@ -213,7 +213,7 @@ export default function ChunkEditor({ onSave, onCancel, prevChunks, initialData 
       {/* Chunk builder */}
       {chunks.length > 0 && (
         <div className="ce-field">
-          <label className="ce-label">Tap a block for role — tap ✦ to blank it — tap gap to merge</label>
+          <label className="ce-label">Tap a block for role — tap Blank to mark it — tap gap to merge</label>
           <div className="ce-chunks-row">
             {chunks.map((chunk, i) => {
               const [text, roleKey, blankable, image_url] = chunk
@@ -261,7 +261,7 @@ export default function ChunkEditor({ onSave, onCancel, prevChunks, initialData 
                           onClick={() => handleToggleBlankable(i)}
                           title={blankable ? 'Remove blank' : 'Make this a blank'}
                         >
-                          <i className="ti ti-square-dashed" />
+                          Blank
                         </button>
                       )}
                     </div>

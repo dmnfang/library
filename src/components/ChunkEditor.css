@@ -120,26 +120,30 @@
 }
 
 .ce-blank-toggle {
-  font-size: 12px;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
   color: var(--color-text-tertiary);
-  background: none;
-  border: none;
+  background: var(--color-bg-surface-raised);
+  border: 1px solid var(--color-border-default);
   cursor: pointer;
-  padding: 2px 4px;
+  padding: 2px 6px;
   border-radius: 4px;
-  display: flex;
-  align-items: center;
-  transition: color var(--motion-micro), background var(--motion-micro);
+  transition: color var(--motion-micro), background var(--motion-micro), border-color var(--motion-micro);
 }
 
 .ce-blank-toggle:hover {
   color: #4A5FC1;
   background: #EDF0FB;
+  border-color: #4A5FC1;
 }
 
 .ce-blank-toggle.active {
   color: #4A5FC1;
   background: #EDF0FB;
+  border-color: #4A5FC1;
 }
 
 /* Clue row beneath a blankable chunk */
